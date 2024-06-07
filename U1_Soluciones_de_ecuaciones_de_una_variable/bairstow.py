@@ -116,7 +116,6 @@ def calcular_bairstow_interna(a, r0, s0):
         raiz = -(r / s)
         raices_encontradas.append(raiz)
 
-    # Devolver todas las raíces encontradas al final de la función
     return raices_encontradas
 
 

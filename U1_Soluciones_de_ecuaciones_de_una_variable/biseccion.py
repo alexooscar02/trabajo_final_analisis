@@ -1,5 +1,4 @@
 import pandas as pd
-from math import e
 import sympy as sp
 from sympy import symbols, Poly, parse_expr
 from sympy.parsing.sympy_parser import (
@@ -10,7 +9,6 @@ from sympy.parsing.sympy_parser import (
 )
 
 x = symbols("x")
-
 
 def pedir_funcion():
     transformations = standard_transformations + (
@@ -34,7 +32,6 @@ def pedir_funcion():
                 "Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo."
             )
 
-
 def pedir_cifras(mensaje):
     while True:
         valor = input(mensaje)
@@ -50,9 +47,7 @@ def pedir_cifras(mensaje):
         else:
             print("Error: No puedes dejar este campo vacío.")
 
-
 def calcular_biseccion():
-    Es = 0.5 * 10 ** (2 - 3)
     iteracion = 1
     df = pd.DataFrame(
         columns=[
@@ -81,22 +76,27 @@ def calcular_biseccion():
             "Opción inválida. Ingresa 'c' para cifras significativas o 't' para tolerancia: "
         )
 
+    # Definir Es y el factor de conversión para Ea
     if opcion.lower() == "c":
         cifras = pedir_cifras("Ingrese las cifras significativas: ")
         Es = 0.5 * 10 ** (2 - cifras)
+        factor_conversion = 100  # Factor de conversión para Ea en porcentaje
     else:
         Es = pedir_cifras("Ingrese la tolerancia: ")
+        factor_conversion = 1  # No se convierte a porcentaje
 
-    Ea = 1
+    Ea = float('inf')  # Inicializamos con un valor grande
     x_anterior = None
 
+    # Verificar el signo de la función en los extremos del intervalo
     if f.subs("x", a) * f.subs("x", b) < 0:
-        while True:
-            xr = (a + b) / 2
+        while Ea > Es:
+            xr = (a + b) / 2  # Punto medio
 
             if x_anterior is not None:
-                Ea = abs(((xr - x_anterior) / xr) * 100)
+                Ea = abs(((xr - x_anterior) / xr) * factor_conversion)
 
+            # Determinar el nuevo intervalo
             if f.subs("x", xr) * f.subs("x", a) < 0:
                 b = xr
             else:
@@ -111,28 +111,16 @@ def calcular_biseccion():
                 f.subs("x", b),
                 f.subs("x", xr),
                 f.subs("x", a) * f.subs("x", xr),
-                "< 0" if f.subs("x", a) * f.subs("x", xr) < 0 else " > 0",
+                "< 0" if f.subs("x", a) * f.subs("x", xr) < 0 else "> 0",
                 Ea,
             ]
+
             x_anterior = xr
-
-            if Ea <= Es:
-                break
-
             iteracion += 1
     else:
-        print("El método de bisección no se pudo realizar")
+        print("El método de bisección no se pudo realizar porque no hay un cambio de signo en el intervalo.")
 
     print(df)
-    print(
-        "La raiz de la ecuacion es ",
-        xr,
-        "con un error de ",
-        Ea,
-        "% en la",
-        iteracion,
-        "° iteracion",
-    )
-
+    print(f"La raíz de la ecuación es {xr} con un error de {Ea} en la {iteracion-1}° iteración.")
 
 calcular_biseccion()
