@@ -12,8 +12,8 @@ def pedir_funcion(mensaje):
     while True:
         expr_str = input(mensaje)
         if all(c not in expr_str for c in "#$%&\"'_`~{}[]@¿¡!?°|;:<>"):
-            valid_chars_pattern = re.compile(r'^[a-zA-Z0-9\s\+\-\*/\^\(\)\|\.,]*$')
-            if valid_chars_pattern.match(expr_str):
+            caracteres_validos = re.compile(r'^[a-zA-Z0-9\s\+\-\*/\^\(\)\|\.,]*$')
+            if caracteres_validos.match(expr_str):
                 try:
                     expr = parse_expr(expr_str, transformations=transformations)
                     exp_pol = Poly(expr)
@@ -75,8 +75,7 @@ def calcular_secante():
         xi_actual = xi_futura
         iteracion += 1
 
-    print("\n\t\tMETODO DE LA SECANTE") 
-    print(f"Funcion: F(x)= {sympify("x**3-cos(x)")} con un nivel de toleracia del {Es}%. Con x-1 = 0 y x0 = 1")
+    print(f"Funcion: F(x)={func} con un nivel de toleracia del {Es}%. Con x-1 = {xi_anterior} y x0 = {xi_actual}")
     print(df)
     print(f"La raíz de la ecuación es {xi_futura} con un error de {Ea}% en la {iteracion-1}° iteración")
 
