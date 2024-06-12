@@ -1,0 +1,86 @@
+import pandas as pd
+from sympy import *
+from sympy import symbols, Poly, parse_expr
+from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
+from sympy.abc import *
+import re
+
+x = symbols('x')
+
+def pedir_funcion(mensaje):
+    transformations = standard_transformations + (split_symbols, implicit_multiplication, convert_xor)
+    while True:
+        expr_str = input(mensaje)
+        if all(c not in expr_str for c in "#$%&\"'_`~{}[]@¿¡!?°|;:<>"):
+            valid_chars_pattern = re.compile(r'^[a-zA-Z0-9\s\+\-\*/\^\(\)\|\.,]*$')
+            if valid_chars_pattern.match(expr_str):
+                try:
+                    expr = parse_expr(expr_str, transformations=transformations)
+                    exp_pol = Poly(expr)
+                    print(f"➣ Ecuacion: {exp_pol}")
+                    return expr
+                except:
+                    print("Error: La función ingresada no es válida. Por favor, inténtalo de nuevo.")
+            else:
+                print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
+        else:
+            print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
+
+def pedir_cifras(mensaje):
+    while True:
+        valor = input(mensaje)
+        if valor.strip():
+            try:
+                numero = sympify(valor)
+                if numero.is_real:
+                    return float(numero)
+                else:
+                    print("Error: Ingresa un número real válido.")
+            except (ValueError, TypeError):
+                print("Error: Ingresa un número válido.")
+        else:
+            print("Error: No puedes dejar este campo vacío.")
+
+def calcular_secante():
+    print("\t\tMETODO DE LA SECANTE\n")
+    f = Function('f')(x)
+    # Función principal
+    func = pedir_funcion("Ingrese la funcion principal: ")
+    f = lambdify(x, func)
+
+    iteracion=1
+    xi_anterior = pedir_cifras("Ingrese el valor de x-1: ")
+    xi_actual = pedir_cifras("Ingrese el valor de x0: ")
+    Ea = 1
+
+    df = pd.DataFrame(columns=["iteracion", "xi-1", "xi",  "f(xi-1)", "f(xi)", "xi+1", "Ea"])
+
+    opcion = input("¿Desea ingresar las cifras significativas o la tolerancia directamente? (c/t): ")
+    while opcion.lower() not in ['c', 't']:
+        opcion = input("Opción inválida. Ingrese 'c' para cifras significativas o 't' para tolerancia: ")
+
+    if opcion.lower() == 'c':
+        cifras = pedir_cifras("Ingrese las cifras significativas: ")
+        Es = 0.5 * 10 ** (2 - cifras)
+    else:
+        Es = pedir_cifras("Ingrese la tolerancia: ")
+
+    while Ea > Es:        
+        xi_futura = xi_actual - ((f(xi_actual) * (xi_anterior - xi_actual)) / (f(xi_anterior) - f(xi_actual)))
+        Ea = abs(((xi_actual - xi_anterior) / xi_actual)) if opcion.lower() == 't' else abs(((xi_actual - xi_anterior) / xi_actual) * 100)
+
+        df.loc[iteracion - 1] = [iteracion, xi_anterior, xi_actual, f(xi_anterior), f(xi_actual), xi_futura, Ea]
+        
+        xi_anterior = xi_actual
+        xi_actual = xi_futura
+        iteracion += 1
+
+    print("\n\t\tMETODO DE LA SECANTE") 
+    print(f"Funcion: F(x)= {sympify("x**3-cos(x)")} con un nivel de toleracia del {Es}%. Con x-1 = 0 y x0 = 1")
+    print(df)
+    print(f"La raíz de la ecuación es {xi_futura} con un error de {Ea}% en la {iteracion-1}° iteración")
+
+calcular_secante()
+
+
+
