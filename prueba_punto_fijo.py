@@ -77,7 +77,7 @@ def calcular_punto_fijo():
         Es = pedir_cifras("Ingrese la tolerancia: ")
 
     convergencia = p(x0)
-    if abs(convergencia) < 1:
+    if convergencia < 1:
         print("Converge")
 
         while Ea > Es:
@@ -86,7 +86,7 @@ def calcular_punto_fijo():
 
             df.loc[iteracion - 1] = [iteracion, x0, xi_actual, Ea]
 
-            x0 = xi_actual
+            x0=xi_actual
             iteracion += 1
 
         print("\n\t\tMETODO DEL PUNTO FIJO")
