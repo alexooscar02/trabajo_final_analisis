@@ -1,7 +1,12 @@
 import pandas as pd
-import tabulate
 import math
 import cmath
+from sympy import *
+from sympy import symbols, Poly, parse_expr
+from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication,convert_xor
+import cmath
+
+x = symbols('x')
 
 def calcular_valores_b(a, r, s):
     n = len(a) - 1  
@@ -118,18 +123,62 @@ def calcular_bairstow_interna(a, r0, s0):
 
     return raices_encontradas
 
+def pedir_funcion():
+    transformations = standard_transformations + (split_symbols, implicit_multiplication, convert_xor)
+    while True:
+        expr_str = input("Ingrese la función en términos de x: ")
+        caracteres_permitidos = set('x+-**/^() ')
+        if all(c.isalnum() or c in caracteres_permitidos for c in expr_str):
+            try:
+                expr = parse_expr(expr_str, transformations=transformations)
+                exp_pol = Poly(expr)
+                print(f"➣ Ecuacion: {exp_pol}")
+                coeficientes = list(reversed(exp_pol.all_coeffs()))  # Revertir los coeficientes
+                print(coeficientes)
+                return coeficientes
+            except:
+                print("Error: La función ingresada no es válida. Por favor, inténtalo de nuevo.")
+        else:
+            print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
 
+def pedir_cifras(mensaje):
+    while True:
+        valor = input(mensaje)
+        if valor.strip():
+            try:
+                numero = sympify(valor)
+                if numero.is_real:
+                    return float(numero)
+                else:
+                    print("Error: Ingresa un número real válido.")
+            except (ValueError, TypeError):
+                print("Error: Ingresa un número válido.")
+        else:
+            print("Error: No puedes dejar este campo vacío.")
+            
 def calcular_bairstow():
-    Es = 0.05
     EDr = 100
     EDs = 100
     iteracion = 1
 
-    r0 = 1
-    s0 = 1
-    a = [-78, 23, 13, -7, 1]
+    a = pedir_funcion()
 
+    r0 = pedir_cifras("Ingrese el valor de r0: ")
+    s0 = pedir_cifras("Ingrese el valor de s0: ")
+    
     df = pd.DataFrame(columns=["Iteracion", "r", "s", "Ear", "Eas"])
+
+    opcion = input("¿Desea ingresar las cifras significativas o la tolerancia directamente? (c/t): ")
+    while opcion.lower() not in ['c', 't']:
+        opcion = input("Opción inválida. Ingrese 'c' para cifras significativas o 't' para tolerancia: ")
+
+    if opcion.lower() == 'c':
+        cifras = pedir_cifras("Ingrese las cifras significativas: ")
+        Es = 0.5 * 10 ** (2 - cifras)
+    else:
+        Es = pedir_cifras("Ingrese la tolerancia: ")
+
+
     raices_encontradas = []  # Lista para almacenar todas las raíces encontradas
 
     while EDr > Es and EDs > Es:
