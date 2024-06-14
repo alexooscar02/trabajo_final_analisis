@@ -1,10 +1,39 @@
 import sympy as sp
+from sympy import symbols, Poly, parse_expr
+from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
+from sympy.abc import *
 
-# Definir símbolo x
-x = sp.symbols("x")
+x = symbols('x')
 
-def lagrange(xk, yk, punto):
+def pedir_valores(nombre):
+    while True:
+        try:
+            valores = input(f"Ingrese los valores de {nombre} separados por comas: ")
+            lista_valores = [float(val) for val in valores.split(',')]
+            return lista_valores
+        except ValueError:
+            print("Error: Por favor, ingrese números válidos separados por comas.")
+
+def calcular_lagrange():
     print("METODO DE INTERPOLACION DE LAGRANGE\n")
+
+    # Pedir valores de xk y yk al usuario
+    xk = pedir_valores("xk")
+    yk = pedir_valores("yk")
+
+    # Validar que xk y yk tengan la misma longitud
+    if len(xk) != len(yk):
+        print("Error: Las listas de xk y yk deben tener la misma longitud.")
+        return
+
+    # Pedir el punto donde se evaluará el polinomio
+    while True:
+        try:
+            punto = float(input("Ingrese el punto donde evaluar el polinomio: "))
+            break
+        except ValueError:
+            print("Error: Por favor, ingrese un número válido.")
+
     lagrange_poli = 0
 
     # Construir el polinomio de Lagrange
@@ -18,7 +47,7 @@ def lagrange(xk, yk, punto):
     # Expandir el polinomio para una forma más simplificada
     lagrange_poli_exp = sp.expand(lagrange_poli)
 
-    print(f"Polinomio resultante P(x) = {lagrange_poli}")
+    print(f"\nPolinomio resultante P(x) = {lagrange_poli}")
     print(f"Polinomio reducido P(x) = {lagrange_poli_exp}\n")
 
     # Evaluar el polinomio en el punto dado
@@ -27,21 +56,4 @@ def lagrange(xk, yk, punto):
 
     return lagrange_poli_exp, resultado
 
-def main():
-    # Puntos de interpolación
-    xk = [0, 0.5, 1]
-    yk = [1, 1.648721271, 2.718281828]
-
-    # Punto para evaluar el polinomio de Lagrange
-    punto = 0.25  # Cambia este valor para evaluar en un punto diferente
-
-    # Calcular el polinomio de Lagrange y evaluar en el punto
-    polinomio, resultado = lagrange(xk, yk, punto)
-
-    # Imprimir los resultados
-    print("\nResultados finales:")
-    print(f"Polinomio de Lagrange: {polinomio}")
-    print(f"Evaluación en el punto {punto}: {resultado}")
-
-if __name__ == "__main__":
-    main()
+calcular_lagrange()
