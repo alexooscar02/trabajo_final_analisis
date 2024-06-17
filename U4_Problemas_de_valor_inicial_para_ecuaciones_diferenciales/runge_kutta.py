@@ -59,12 +59,12 @@ class RungeKutta4:
             print(f"{i:<10}{x_prev:<10.5f}{y_prev:<15.5f}{k1:<15.5f}{k2:<15.5f}{k3:<15.5f}{k4:<15.5f}{y_next:<15.5f}")
 
 # Ejemplo de uso
-funcion = "y*log(x)"  # Función a trabajar
-x0 = 0.1
+funcion = "y*exp(x)"  # Función a trabajar
+x0 = 1
   # Valor inicial de x
-y0 = 1  # Valor inicial de y
-xf = 6  # Valor final de x
-h = 0.2  # Paso
+y0 = 2  # Valor inicial de y
+xf = 2  # Valor final de x
+h = 0.1  # Paso
 
 rk4 = RungeKutta4(funcion, x0, y0, xf, h)
 rk4.run()  # Ejecuta el método RK4 y muestra la tabla de resultados
