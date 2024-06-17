@@ -1,4 +1,3 @@
-from pedir_funcion import pedir_funcion
 import math
 from tabulate import tabulate
 import cmath
@@ -7,6 +6,18 @@ from sympy import *
 
 
 e, x=symbols('e x')
+
+import re
+
+def pedir_funcion():
+    allowed_chars = r"[a-zA-Z\s\+\-\*/\^0-9\(\)\.,]"
+    while True:
+        funcion = input("Ingrese la función (solo se permiten letras y caracteres matemáticos): ")
+        if re.match(allowed_chars, funcion):
+            return funcion
+        else:
+            print("Función inválida. Por favor, inténtelo de nuevo.")
+
 #evaluar la funcion solictada al usuario
 def Evaluar(funcion_str, valor):
 		funcion_str = parse_expr(funcion_str)

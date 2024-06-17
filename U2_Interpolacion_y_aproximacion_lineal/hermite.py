@@ -53,7 +53,7 @@ def build_hermite_polynomial(X, Q):
         hermite_poly += term
     return expand(hermite_poly)
 
-def main():
+def main_hermite():
     f = input("Ingrese la función f(x): ")
     x_vals = list(map(float, input("Ingrese los valores de x separados por comas: ").split(',')))
     derivatives_count = int(input("Ingrese el número máximo de derivadas: "))
@@ -71,4 +71,4 @@ def main():
     print(f"\nEl polinomio de Hermite es: {hermite_poly}")
 
 if __name__ == "__main__":
-    main()
+    main_hermite()
