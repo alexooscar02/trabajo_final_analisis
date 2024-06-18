@@ -1,70 +1,123 @@
+from sympy import symbols, Poly, parse_expr, exp
+from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
+import re
 import sympy as sp
 import numpy as np
+import pandas as pd
 
-class RungeKutta4:
-    def __init__(self, func, x0, y0, xf, h):
-        self.func = sp.sympify(func.replace("^", "**"))  # Función a trabajar
-        self.x0 = float(x0)  # Valor inicial de x
-        self.y0 = float(y0)  # Valor inicial de y
-        self.xf = float(xf)  # Valor final de x
-        self.h = float(h)    # Paso
-        self.n = int((self.xf - self.x0) / self.h)  # Número de iteraciones calculado automáticamente
+x = symbols('x')
 
-    def eval_func(self, x_val, y_val):
-        x, y = sp.symbols('x y')
-        return float(self.func.subs({x: x_val, y: y_val}).evalf())
+# Función para pedir valores de xk o yk
+def pedir_valores(nombre):
+    while True:
+        try:
+            valores = input(f"Ingrese los valores de {nombre} separados por comas: ")
+            lista_valores = [float(val) for val in valores.split(',')]
+            return lista_valores
+        except ValueError:
+            print("Error: Por favor, ingrese números válidos separados por comas.")
 
-    def run(self):
-        x_vals = [self.x0]
-        y_vals = [self.y0]
+# Función para pedir la función matemática
+def pedir_funcion(mensaje):
+    transformations = standard_transformations + (split_symbols, implicit_multiplication, convert_xor)
+    while True:
+        expr_str = input(mensaje)
+        if all(c not in expr_str for c in "#$%&\"'_`~{}[]@¿¡!?°|;:<>"):
+            valid_chars_pattern = re.compile(r'^[a-zA-Z0-9\s\+\-\*/\^\(\)\|\.,]*$')
+            if valid_chars_pattern.match(expr_str):
+                try:
+                    expr = parse_expr(expr_str, transformations=transformations)
+                    exp_pol = Poly(expr)
+                    print(f"➣ Ecuacion: {exp_pol}")
+                    return expr
+                except:
+                    print("Error: La función ingresada no es válida. Por favor, inténtalo de nuevo.")
+            else:
+                print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
+        else:
+            print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
 
-        print(f"{'Iter':<10}{'x_i':<10}{'y_i':<15}{'k1':<15}{'k2':<15}{'k3':<15}{'k4':<15}{'y_(i+1)':<15}")
-        print("="*100)
+def eval_func(func, x_val, y_val):
+    x, y = sp.symbols('x y')
+    return float(func.subs({x: x_val, y: y_val}).evalf())
 
-        for i in range(self.n):
-            x_prev = x_vals[-1]
-            y_prev = y_vals[-1]
+def runge_kutta_method(func, x0, y0, xf, h, order):
+    x0, y0, xf, h = float(x0), float(y0), float(xf), float(h)
+    n = int((xf - x0) / h)
 
-            k1 = self.h * self.eval_func(x_prev, y_prev)
-            k2 = self.h * self.eval_func(x_prev + self.h / 2, y_prev + k1 / 2)
-            k3 = self.h * self.eval_func(x_prev + self.h / 2, y_prev + k2 / 2)
-            k4 = self.h * self.eval_func(x_prev + self.h, y_prev + k3)
+    x_vals = [x0]
+    y_vals = [y0]
 
-            y_next = y_prev + (k1 + 2*k2 + 2*k3 + k4) / 6
-            x_next = x_prev + self.h
+    if order == 2:
+        method = runge_kutta_2
+    elif order == 3:
+        method = runge_kutta_3
+    elif order == 4:
+        method = runge_kutta_4
+    else:
+        print("Error: Orden no válido. Debe ser 2, 3 o 4.")
+        return
 
-            x_vals.append(x_next)
-            y_vals.append(y_next)
+    data = []
+    for i in range(n):
+        x_prev = x_vals[-1]
+        y_prev = y_vals[-1]
+        x_next, y_next, k1, k2, k3, k4 = method(func, x_prev, y_prev, h)
+        x_vals.append(x_next)
+        y_vals.append(y_next)
+        data.append([i, x_prev, y_prev, k1, k2, k3, k4, y_next])
 
-            print(f"{i:<10}{x_prev:<10.5f}{y_prev:<15.5f}{k1:<15.5f}{k2:<15.5f}{k3:<15.5f}{k4:<15.5f}{y_next:<15.5f}")
+    df = pd.DataFrame(data, columns=['Iter', 'x_i', 'y_i', 'k1', 'k2', 'k3', 'k4', 'y_(i+1)'])
+    df.fillna('', inplace=True)  # Reemplaza None con una cadena vacía para una mejor visualización
+    print(df.to_string(index=False))
 
-        print("\nResultados finales:")
-        self.mostrar_tabla(x_vals, y_vals)
+    return x_vals, y_vals
 
-    def mostrar_tabla(self, x_vals, y_vals):
-        print(f"{'Iter':<10}{'x_i':<10}{'y_i':<15}{'k1':<15}{'k2':<15}{'k3':<15}{'k4':<15}{'y_(i+1)':<15}")
-        print("="*100)
+def runge_kutta_2(func, x_prev, y_prev, h):
+    k1 = h * eval_func(func, x_prev, y_prev)
+    k2 = h * eval_func(func, x_prev + h, y_prev + k1)
+    y_next = y_prev + (k1 + k2) / 2
+    x_next = x_prev + h
+    return x_next, y_next, k1, k2, None, None
 
-        for i in range(self.n):
-            x_prev = x_vals[i]
-            y_prev = y_vals[i]
+def runge_kutta_3(func, x_prev, y_prev, h):
+    k1 = h * eval_func(func, x_prev, y_prev)
+    k2 = h * eval_func(func, x_prev + h / 2, y_prev + k1 / 2)
+    k3 = h * eval_func(func, x_prev + h, y_prev - k1 + 2 * k2)
+    y_next = y_prev + (k1 + 4 * k2 + k3) / 6
+    x_next = x_prev + h
+    return x_next, y_next, k1, k2, k3, None
 
-            k1 = self.h * self.eval_func(x_prev, y_prev)
-            k2 = self.h * self.eval_func(x_prev + self.h / 2, y_prev + k1 / 2)
-            k3 = self.h * self.eval_func(x_prev + self.h / 2, y_prev + k2 / 2)
-            k4 = self.h * self.eval_func(x_prev + self.h, y_prev + k3)
+def runge_kutta_4(func, x_prev, y_prev, h):
+    k1 = h * eval_func(func, x_prev, y_prev)
+    k2 = h * eval_func(func, x_prev + h / 2, y_prev + k1 / 2)
+    k3 = h * eval_func(func, x_prev + h / 2, y_prev + k2 / 2)
+    k4 = h * eval_func(func, x_prev + h, y_prev + k3)
+    y_next = y_prev + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    x_next = x_prev + h
+    return x_next, y_next, k1, k2, k3, k4
 
-            y_next = y_vals[i + 1]
+def main_runge_kutta():
+    funcion = pedir_funcion("Ingrese la función f(x,y): ")  # Función a trabajar
+    x0 = float(input("Ingrese el valor inicial de x (x0): "))  # Valor inicial de x
+    y0 = float(input("Ingrese el valor inicial de y (y0): "))  # Valor inicial de y
+    xf = float(input("Ingrese el valor final de x (xf): "))  # Valor final de x
+    h = float(input("Ingrese el paso (h): "))  # Paso
 
-            print(f"{i:<10}{x_prev:<10.5f}{y_prev:<15.5f}{k1:<15.5f}{k2:<15.5f}{k3:<15.5f}{k4:<15.5f}{y_next:<15.5f}")
+    print("Seleccione el orden del método de Runge-Kutta:")
+    print("1. Orden 2")
+    print("2. Orden 3")
+    print("3. Orden 4")
+    orden = int(input("Ingrese el número de opción: "))
 
-# Ejemplo de uso
-funcion = "y*exp(x)"  # Función a trabajar
-x0 = 1
-  # Valor inicial de x
-y0 = 2  # Valor inicial de y
-xf = 2  # Valor final de x
-h = 0.1  # Paso
+    if orden == 1:
+        runge_kutta_method(funcion, x0, y0, xf, h, order=2)
+    elif orden == 2:
+        runge_kutta_method(funcion, x0, y0, xf, h, order=3)
+    elif orden == 3:
+        runge_kutta_method(funcion, x0, y0, xf, h, order=4)
+    else:
+        print("Opción no válida.")
 
-rk4 = RungeKutta4(funcion, x0, y0, xf, h)
-rk4.run()  # Ejecuta el método RK4 y muestra la tabla de resultados
+if __name__ == "__main__":
+    main_runge_kutta()
