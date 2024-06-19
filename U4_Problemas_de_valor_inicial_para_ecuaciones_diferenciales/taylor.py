@@ -2,6 +2,7 @@ from sympy import symbols, Poly, parse_expr, diff, sympify
 from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
 import re
 import numpy as np
+import pandas as pd
 from math import pow, factorial
 
 x, y = symbols('x y')
@@ -61,7 +62,6 @@ class Taylor:
     def eval(self, funcion, valor_x, valor_y):
         return funcion.subs([(x, float(valor_x)), (y, float(valor_y))])
 
-    @property
     def taylor(self):
         if self.n == 0 and self.h == 0:
             print("Error: Debes proporcionar un tamaño de paso (h) o una cantidad de puntos (n).")
@@ -88,12 +88,12 @@ class Taylor:
                 return
 
         try:
-            x = list(np.linspace(float(self.xi), float(self.xf), int(self.n + 1)))
+            x_vals = np.linspace(float(self.xi), float(self.xf), int(self.n + 1))
         except ValueError as e:
             print(f"Error: {e}")
             return
 
-        yf = [float(self.yi)]
+        y_vals = [float(self.yi)]
 
         fi = [self.funct]
         if len(self.derivadas) == 0:
@@ -102,21 +102,22 @@ class Taylor:
         else:
             fi += [sympify(funct) for funct in self.derivadas]
 
-        print("Tabla de valores:")
-        print(f"{'x':<15}{'y (Taylor)':<15}")
-        print(f"{x[0]:<15}{float(yf[0]):<15}")
+        data = {"x": [x_vals[0]], "y (Taylor)": [float(y_vals[0])]}
 
-        for i in range(1, len(x)):
-            T = yf[i - 1]
+        for i in range(1, len(x_vals)):
+            T = y_vals[i - 1]
             for k in range(len(fi)):
-                T += (self.eval(fi[k], x[i - 1], yf[i - 1])) * (pow(self.h, k + 1) / factorial(k + 1))
-            yf.append(float(T))
-            print(f"{x[i]:<15}{float(T):<15}")
+                T += (self.eval(fi[k], x_vals[i - 1], y_vals[i - 1])) * (pow(self.h, k + 1) / factorial(k + 1))
+            y_vals.append(float(T))
+            data["x"].append(x_vals[i])
+            data["y (Taylor)"].append(float(T))
 
-        print("\nResultado final:")
-        print(f"x final: {x[-1]}, y final (Taylor): {float(yf[-1])}")
+        df = pd.DataFrame(data)
+        return df
 
 def main_taylor():
+    print("Método de Taylor para resolver ecuaciones diferenciales ordinarias (EDO)")
+    print("-----------------------------------------------------------------------")
     funcion = pedir_funcion("Ingrese la función f(x,y): ")
     xi = pedir_cifras("Ingrese el valor inicial de x (x0): ")
     yi = pedir_cifras("Ingrese el valor inicial de y (y0): ")
@@ -124,8 +125,14 @@ def main_taylor():
     h = pedir_cifras("Ingrese el paso (h): ")
     grado = int(pedir_cifras("Ingrese el grado del polinomio de Taylor: "))
 
-    taylor = Taylor(funct=str(funcion), xi=xi, yi=yi, xf=xf, grado=grado, h=h)
-    taylor.taylor
+    taylor_solver = Taylor(funct=str(funcion), xi=xi, yi=yi, xf=xf, grado=grado, h=h)
+    results_df = taylor_solver.taylor()
+
+    print("\nTabla de valores:")
+    print(results_df.to_string(index=False))
+
+    print("\nResultado final:")
+    print(f"x final: {results_df.iloc[-1]['x']}, y final (Taylor): {results_df.iloc[-1]['y (Taylor)']}")
 
 if __name__ == "__main__":
     main_taylor()
