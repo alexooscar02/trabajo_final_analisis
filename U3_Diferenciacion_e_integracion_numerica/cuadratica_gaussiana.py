@@ -1,7 +1,17 @@
 import numpy as np
 import sympy as sp
 from numpy.polynomial.legendre import leggauss
-from pedir_funcion import pedir_funcion  # Importamos la función desde pedir_funcion.py
+
+import re
+
+def pedir_funcion():
+    allowed_chars = r"[a-zA-Z\s\+\-\*/\^0-9\(\)\.,]"
+    while True:
+        funcion = input("Ingrese la función (solo se permiten letras y caracteres matemáticos): ")
+        if re.match(allowed_chars, funcion):
+            return funcion
+        else:
+            print("Función inválida. Por favor, inténtelo de nuevo.")
 
 def cuadratica_gaussiana(funcion, a, b, nodos, pesos):
     x = sp.symbols('x')
