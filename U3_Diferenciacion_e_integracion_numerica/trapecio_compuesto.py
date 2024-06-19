@@ -51,12 +51,18 @@ def trapecio_compuesto_triple(f, a1, b1, a2, b2, a3, b3, n):
     return integral
 
 # Función para solicitar los intervalos de integración para una dimensión dada
+# Función para solicitar los intervalos de integración para una dimensión dada
 def pedir_intervalos(dim):
     intervalos = []
     for d in range(dim):
-        a = float(input(f"Ingrese el valor del intervalo a para la dimensión {d+1}: "))
-        b = float(input(f"Ingrese el valor del intervalo b para la dimensión {d+1}: "))
-        intervalos.append((a, b))
+        while True:
+            try:
+                a = float(input(f"Ingrese el valor del intervalo a para la dimensión {d+1}: "))
+                b = float(input(f"Ingrese el valor del intervalo b para la dimensión {d+1}: "))
+                intervalos.append((a, b))
+                break  # Salir del bucle while si se ingresan valores numéricos válidos
+            except ValueError:
+                print("Error: Por favor, ingrese valores numéricos válidos para los intervalos.")
     return intervalos
 
 # Función para detectar la dimensión de la función ingresada
@@ -192,4 +198,3 @@ if __name__ == "__main__":
     
     else:
         print("No se puede manejar una integral de más de tres dimensiones.")
-
