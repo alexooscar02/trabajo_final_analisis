@@ -1,15 +1,17 @@
 import math
-
 import re
 
 def pedir_funcion():
-    allowed_chars = r"[a-zA-Z\s\+\-\*/\^0-9\(\)\.,]"
+    allowed_chars = r"^[a-zA-Z0-9\s\+\-\*/\^()\.]*$"
     while True:
         funcion = input("Ingrese la función (solo se permiten letras y caracteres matemáticos): ")
+        # Reemplazar ln por math.log en la cadena de entrada
+        funcion = funcion.replace('ln', 'math.log')
         if re.match(allowed_chars, funcion):
             return funcion
         else:
             print("Función inválida. Por favor, inténtelo de nuevo.")
+
 
 # Diferencias Divididas Hacia Atrás
 
@@ -93,7 +95,7 @@ def prideri_haciaadelante1(f, x, h, formula):
         f_xi = f(x)
         f_xi_mas_1 = f(x + h)
         f_xi_mas_2 = f(x + 2 * h)
-        return (-f_xi_mas_2 - 4 * f_xi_mas_1 - 3 * f_xi) / (2 * h)
+        return (-f_xi_mas_2 + 4 * f_xi_mas_1 - 3 * f_xi) / (2 * h)
     else:
         return "Fórmula no válida"
 
@@ -200,7 +202,7 @@ def terderi_centrada1(f, x, h, formula):
         f_xi_mens_1 = f(x - h)
         f_xi_mens_2 = f(x - 2 * h)
         f_xi_mens_3 = f(x - 3 * h)
-        return (-f_xi_mas_3 + 8 * f_xi_mas_2 - 13 * f_xi_mas_1 + 3 * f_xi_mens_1 - 8 * f_xi_mens_2 + f_xi_mens_3) / (8 * h ** 3)
+        return (-f_xi_mas_3 + 8 * f_xi_mas_2 - 13 * f_xi_mas_1 + 13 * f_xi_mens_1 - 8 * f_xi_mens_2 + f_xi_mens_3) / (8 * h ** 3)
     else:
         return "Fórmula no válida"
 
@@ -247,7 +249,7 @@ def pricinco_puntos1(f, x, h, formula):
         f_xi_mas_2 = f(x + 2 * h)
         f_xi_mas_3 = f(x + 3 * h)
         f_xi_mas_4 = f(x + 4 * h)
-        return (-25 * f_xi + 48 * f_xi_mas_1 + 36 * f_xi_mas_2 + 16 * f_xi_mas_3 - 3 * f_xi_mas_4) / (12 * h)
+        return (-25 * f_xi + 48 * f_xi_mas_1 - 36 * f_xi_mas_2 + 16 * f_xi_mas_3 - 3 * f_xi_mas_4) / (12 * h)
     elif formula == "formula2":
         f_xi = f(x)
         f_xi_mas_1 = f(x + h)
@@ -268,7 +270,7 @@ def pricinco_puntos1(f, x, h, formula):
         f_xi_mens_1 = f(x - h)
         f_xi_mens_2 = f(x - 2 * h)
         f_xi_mens_3 = f(x - 3 * h)
-        return (4 * f_xi_mens_3 + 6 * f_xi_mens_2 - 8 * f_xi_mens_1 + 34 * f_xi + 3 * f_xi_mas_1 + 34 * f_xi_mas_2) / (12 * h)
+        return (4 * f_xi_mens_3 + 6 * f_xi_mens_2 - 8 * f_xi_mens_1 + 34 * f_xi - 3 * f_xi_mas_1 + 34 * f_xi_mas_2) / (12 * h)
     elif formula == "formula5":
         f_xi = f(x)
         f_xi_mens_1 = f(x - h)
@@ -278,70 +280,86 @@ def pricinco_puntos1(f, x, h, formula):
         return (f_xi_mens_4 - 3 * f_xi_mens_3 + 4 * f_xi_mens_2 - 36 * f_xi_mens_1 + 25 * f_xi) / (12 * h)
     else:
         return "Fórmula no válida"
+
+def main_diferencias_finitas():
+    print("-" * 120)
+    print("                                         Diferencias Finitas")
+    print("-" * 120)
+
+    # Solicitar la función al usuario
+    funcion_str = pedir_funcion()
+
+    # Convertir la cadena de la función en una función de Python real
+    f = eval("lambda x: " + funcion_str)
     
-    
-print("-"*120)
-print("                                         Diferencias Finitas")
-print("-"*120)
-# Solicitar la función al usuario
-funcion_str = pedir_funcion()
-# Convertir la cadena de la función en una función de Python real
-f = eval("lambda x: " + funcion_str)
-print("-"*120)
-h = float(input("Ingrese el tamaño del paso h: "))
-x = float(input("Ingrese el valor de x en el que desea evaluar la derivada: "))
-print("-"*120)
-#Solicitando al usuario la derivada que desea calcular 
-tipo_derivada=input("¿Que derivada desea calcular?(Ingrese el numero de la derivada)\n1-Primera derivada\n2-Segunda derivada\n3-Tercera derivada\n4-Cuarta derivada\nDeseo:")
-print("-"*120)
-if tipo_derivada =="1":
-    metodo=input("¿Que diferencia dinita desea implementar?(Atras,Adelante,Centrada,3 Puntos,5 Puntos):")
-    if metodo=="Atras":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=primeraderi_formula1(f,x,h,formula)
-    elif metodo=="Adelante":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=prideri_haciaadelante1(f,x,h,formula)
-    elif metodo=="Centrada":
-      formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-      resultado=primedi_centrada1(f,x,h,formula)
-    elif metodo=="3 Puntos":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=primtres_puntos_1(f,x,h,formula)
-    elif metodo=="5 Puntos":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\tformula3\tformula4\tformula5\nDeseo:") 
-        resultado=pricinco_puntos1(f,x,h,formula)
-elif tipo_derivada=="2":
-    if metodo=="Atras":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=segundaderi_formula1(f,x,h,formula)
-    elif metodo=="Adelante":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=seguderi_hacia_adelante1(f,x,h,formula)
-    elif metodo=="Centrada":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=seguderi_centrada1(f,x,h,formula)
-elif tipo_derivada=="3":
-    if metodo=="Atras":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=treceraderi_formula1(f,x,h,formula)
-    elif metodo=="Adelante":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=tercderi_hacia_adelante1(f,x,h,formula)
-    elif metodo=="Centrada":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=terderi_centrada1(f,x,h,formula)
-elif tipo_derivada=="4":
-    if metodo=="Atras":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=cuartaderi_formula1(f,x,h,formula)
-    elif metodo=="Adelante":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=cuarderi_hacia_adelante1(f,x,h,formula)
-    elif metodo=="Centrada":
-        formula=input("¿Que formula desea implementar\nformula1\tformula2\nDeseo:")
-        resultado=cuarderi_centrada(f,x,h,formula)
-else:
-    print("Derivada invalida")
-print("-"*120)
-print("El resultado de la Diferencia Finita es: ",resultado)
+    print("-" * 120)
+    h = float(input("Ingrese el tamaño del paso h: "))
+    x = float(input("Ingrese el valor de x en el que desea evaluar la derivada: "))
+    print("-" * 120)
+
+    # Solicitar al usuario la derivada que desea calcular 
+    tipo_derivada = input("¿Qué derivada desea calcular? (Ingrese el número de la derivada)\n1-Primera derivada\n2-Segunda derivada\n3-Tercera derivada\n4-Cuarta derivada\nDeseo: ")
+    print("-" * 120)
+
+    resultado = None
+    if tipo_derivada == "1":
+        metodo = input("¿Qué diferencia finita desea implementar? (Atras, Adelante, Centrada, 3 Puntos, 5 Puntos): ")
+        if metodo == "Atras":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = primeraderi_formula1(f, x, h, formula)
+        elif metodo == "Adelante":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = prideri_haciaadelante1(f, x, h, formula)
+        elif metodo == "Centrada":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = primedi_centrada1(f, x, h, formula)
+        elif metodo == "3 Puntos":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = primtres_puntos_1(f, x, h, formula)
+        elif metodo == "5 Puntos":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\tformula3\tformula4\tformula5\nDeseo: ")
+            resultado = pricinco_puntos1(f, x, h, formula)
+    elif tipo_derivada == "2":
+        metodo = input("¿Qué diferencia finita desea implementar? (Atras, Adelante, Centrada): ")
+        if metodo == "Atras":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = segundaderi_formula1(f, x, h, formula)
+        elif metodo == "Adelante":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = seguderi_hacia_adelante1(f, x, h, formula)
+        elif metodo == "Centrada":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = seguderi_centrada1(f, x, h, formula)
+    elif tipo_derivada == "3":
+        metodo = input("¿Qué diferencia finita desea implementar? (Atras, Adelante, Centrada): ")
+        if metodo == "Atras":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = treceraderi_formula1(f, x, h, formula)
+        elif metodo == "Adelante":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = tercderi_hacia_adelante1(f, x, h, formula)
+        elif metodo == "Centrada":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = terderi_centrada1(f, x, h, formula)
+    elif tipo_derivada == "4":
+        metodo = input("¿Qué diferencia finita desea implementar? (Atras, Adelante, Centrada): ")
+        if metodo == "Atras":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = cuartaderi_formula1(f, x, h, formula)
+        elif metodo == "Adelante":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = cuarderi_hacia_adelante1(f, x, h, formula)
+        elif metodo == "Centrada":
+            formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
+            resultado = cuarderi_centrada(f, x, h, formula)
+    else:
+        print("Derivada inválida")
+
+    print("-" * 120)
+    if resultado is not None:
+        print("El resultado de la Diferencia Finita es: ", resultado)
+    else:
+        print("No se pudo calcular el resultado debido a una entrada inválida.")
+
+if __name__ == "__main__":
+    main_diferencias_finitas()

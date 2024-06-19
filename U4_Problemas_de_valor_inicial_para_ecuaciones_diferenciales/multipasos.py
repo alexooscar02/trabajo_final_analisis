@@ -153,7 +153,7 @@ class Adaptativo:
 
         return x, valores
 
-def main():
+def main_multipasos():
     # Solicitar la función al usuario
     funcion = pedir_funcion("Ingrese la función f(x,y): ")
 
@@ -176,4 +176,4 @@ def main():
         print("Opción no válida.")
 
 if __name__ == "__main__":
-    main()
+    main_multipasos()

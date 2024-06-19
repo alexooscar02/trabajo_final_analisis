@@ -157,6 +157,7 @@ def pedir_cifras(mensaje):
             print("Error: No puedes dejar este campo vacío.")
             
 def calcular_bairstow():
+    print("\t\t\nMETODO DE BAIRSTOW")
     EDr = 100
     EDs = 100
     iteracion = 1
@@ -228,4 +229,3 @@ def calcular_bairstow():
     # Mostrar todas las raíces encontradas al final
     print(f"Todas las raíces encontradas: {raices_encontradas}")
 
-calcular_bairstow()  

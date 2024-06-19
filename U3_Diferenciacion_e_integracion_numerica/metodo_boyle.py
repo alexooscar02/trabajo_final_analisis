@@ -1,5 +1,29 @@
 import sympy as sp
-from pedir_funcion import pedir_funcion  # Supongo que esta función existe para pedir la función al usuario
+
+from sympy import sympify, symbols, lambdify, Poly, parse_expr
+from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
+
+
+import re
+
+def pedir_funcion(mensaje):
+    transformations = standard_transformations + (split_symbols, implicit_multiplication, convert_xor)
+    while True:
+        expr_str = input(mensaje)
+        if all(c not in expr_str for c in "#$%&\"'_`~{}[]@¿¡!?°|;:<>"):
+            valid_chars_pattern = re.compile(r'^[a-zA-Z0-9\s\+\-\*/\^\(\)\|\.,]*$')
+            if valid_chars_pattern.match(expr_str):
+                try:
+                    expr = parse_expr(expr_str, transformations=transformations)
+                    exp_pol = Poly(expr)
+                    print(f"➣ Ecuacion: {exp_pol}\n")
+                    return expr
+                except:
+                    print("Error: La función ingresada no es válida. Por favor, inténtalo de nuevo.")
+            else:
+                print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
+        else:
+            print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
 
 def metodo_boyle(funcion, a, b):
     # Definimos los puntos x0, x1, x2, x3, x4 dentro del intervalo [a, b]
@@ -22,13 +46,13 @@ def metodo_boyle(funcion, a, b):
     
     return integral_aproximada
 
-def main():
+def main_boyle():
     print("-"*120)
     print("Método de Boyle para aproximación de integral".center(120))
     print("-"*120)
     
     # Solicitamos al usuario ingresar la función
-    funcion_str = pedir_funcion()  # Esta función debería retornar la cadena de la función ingresada por el usuario
+    funcion_str = pedir_funcion("Ingrese la funcion en terminos de x: ")  # Esta función debería retornar la cadena de la función ingresada por el usuario
     funcion = sp.sympify(funcion_str)
     
     # Solicitamos al usuario ingresar los límites de integración
@@ -53,5 +77,5 @@ def main():
     print(f"\nLa aproximación de la integral de la función en el intervalo [{a}, {b}] es: {integral_aproximada}")
 
 if __name__ == "__main__":
-    main()
+    main_boyle()
 

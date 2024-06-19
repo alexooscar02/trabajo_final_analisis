@@ -124,7 +124,7 @@ def calculo_newton_interpolacion_recursiva(valores_x, valores_y, punto_evaluacio
     # Expandir el polinomio para simplificarlo
     polinomio_expandido = sp.expand(polinomio)
     print("\nPolinomio de Newton:")
-    print(polinomio_expandido)
+    print(polinomio_expandido.expand())
 
     # Evaluar el polinomio en el punto de evaluación
     valor_evaluado = polinomio_expandido.subs(x, punto_evaluacion)
@@ -172,4 +172,3 @@ def calcular_interpolacion_newton():
         print("Método de interpolación no válido.")
 
 # Ejecutar la función principal
-calcular_interpolacion_newton()

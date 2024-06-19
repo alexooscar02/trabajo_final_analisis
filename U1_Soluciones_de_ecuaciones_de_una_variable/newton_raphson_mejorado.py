@@ -42,7 +42,7 @@ def pedir_cifras(mensaje):
             print("Error: No puedes dejar este campo vacío.")
 
 
-def calcular_newton_raphson():
+def calcular_newton_raphson_mejorado():
     print("\n\t\tMETODO DE NEWTON-RAPHSON MEJORADO") 
 
     # Pedir la función principal
@@ -96,4 +96,3 @@ def calcular_newton_raphson():
     else:
         print("El criterio de convergencia no cumple.")
 
-calcular_newton_raphson()

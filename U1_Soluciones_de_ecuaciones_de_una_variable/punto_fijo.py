@@ -96,4 +96,3 @@ def calcular_punto_fijo():
     else:
         print("NO CONVERGE")
 
-calcular_punto_fijo()

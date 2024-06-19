@@ -1,4 +1,10 @@
 from sympy import *
+import re
+from sympy import symbols, Poly, parse_expr
+from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
+from sympy.abc import *
+import re
+from tabulate import tabulate
 
 class Integracion:
     def __init__(self, a, b, funcion="", x=[], y=[]):
@@ -164,36 +170,84 @@ class Rosemberg(Integracion):
     @property
     def rosemberg(self):
         integrales = []
+        tabla = []
         for i in range(self.nivel):
             if self.metodo == 1:
                 resultado_trapecio = self.trapecio_multiple(2 ** i)
-                integrales.append(float(resultado_trapecio['Aproximación'][0]))
-                print(f"Nivel {i + 1} - Trapecio Compuesto: {resultado_trapecio['Aproximación'][0]}")
+                aprox = float(resultado_trapecio['Aproximación'][0])
+                integrales.append(aprox)
+                tabla.append([f"Nivel {i + 1} - Trapecio Compuesto", aprox])
             elif self.metodo == 2:
                 resultado_simpson1_3 = self.simpson1_3(2 ** (i + 1))
-                integrales.append(float(resultado_simpson1_3['Aproximación'][0]))
-                print(f"Nivel {i + 1} - Simpson 1/3: {resultado_simpson1_3['Aproximación'][0]}")
+                aprox = float(resultado_simpson1_3['Aproximación'][0])
+                integrales.append(aprox)
+                tabla.append([f"Nivel {i + 1} - Simpson 1/3", aprox])
             else:
                 resultado_simpson3_8 = self.simpson3_8(2 ** i)
-                integrales.append(float(resultado_simpson3_8['Aproximación'][0]))
-                print(f"Nivel {i + 1} - Simpson 3/8: {resultado_simpson3_8['Aproximación'][0]}")
+                aprox = float(resultado_simpson3_8['Aproximación'][0])
+                integrales.append(aprox)
+                tabla.append([f"Nivel {i + 1} - Simpson 3/8", aprox])
 
         self.calcular_diferencias(integrales)
         self.calcular_error(self.resultado['Aproximación'])
         self.resultado['Aproximación'] = [self.resultado['Aproximación']]
 
+        print("\nResultados de la Integración por el Método de Rosemberg:")
+        print(tabulate(tabla, headers=['Método de Integración', 'Aproximación'], tablefmt='fancy_grid'))
+
         return self.resultado
 
-# Ejemplo de uso
-if __name__ == "__main__":
-    a = 0  # Límite inferior
-    b = 1  # Límite superior
-    funcion = "exp(x**2)"  # Función a integrar
-    nivel = 3  # Nivel de Rosemberg
-    metodo = 1  # Método a utilizar: 1 - Trapecio Compuesto, 2 - Simpson 1/3, 3 - Simpson 3/8
+# Función para pedir una función matemática al usuario
+def pedir_funcion(mensaje):
+    transformations = standard_transformations + (split_symbols, implicit_multiplication, convert_xor)
+    while True:
+        expr_str = input(mensaje)
+        if all(c not in expr_str for c in "#$%&\"'_`~{}[]@¿¡!?°|;:<>"):
+            valid_chars_pattern = re.compile(r'^[a-zA-Z0-9\s\+\-\*/\^\(\)\|\.,]*$')
+            if valid_chars_pattern.match(expr_str):
+                try:
+                    expr = parse_expr(expr_str, transformations=transformations)
+                    exp_pol = Poly(expr)
+                    print(f"➣ Ecuacion: {exp_pol}\n")
+                    return expr
+                except:
+                    print("Error: La función ingresada no es válida. Por favor, inténtalo de nuevo.")
+            else:
+                print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
+        else:
+            print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
 
-    rosemberg = Rosemberg(a, b, funcion, nivel, metodo)
+# Función para pedir cifras (números reales)
+def pedir_cifras(mensaje):
+    while True:
+        valor = input(mensaje)
+        if valor.strip():
+            try:
+                numero = sympify(valor)
+                if numero.is_real:
+                    return float(numero)
+                else:
+                    print("Error: Ingresa un número real válido.")
+            except (ValueError, TypeError):
+                print("Error: Ingresa un número válido.")
+        else:
+            print("Error: No puedes dejar este campo vacío.")
+
+# Función principal para ejecutar el método de Rosemberg
+def integrar_con_rosemberg():
+    a = pedir_cifras("Introduce el límite inferior de integración (a): ")
+    b = pedir_cifras("Introduce el límite superior de integración (b): ")
+    funcion = pedir_funcion("Introduce la función a integrar: ")
+    nivel = int(pedir_cifras("Introduce el nivel de Rosemberg: "))
+    metodo = int(pedir_cifras("Introduce el método a utilizar (1 - Trapecio Compuesto, 2 - Simpson 1/3, 3 - Simpson 3/8): "))
+
+    rosemberg = Rosemberg(a, b, str(funcion), nivel, metodo)
     resultado = rosemberg.rosemberg
+
     print(f"\nResultado de la Integración por el Método de Rosemberg:")
     for key, value in resultado.items():
         print(f"{key}: {value}")
+
+# Llamada a la función principal
+if __name__ == "__main__":
+    integrar_con_rosemberg()

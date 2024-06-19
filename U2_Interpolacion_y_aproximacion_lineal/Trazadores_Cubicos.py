@@ -1,119 +1,235 @@
 import numpy as np
-import re
+from sympy import symbols, sympify
 
-def pedir_tabla():
-    x_valores = input("Ingrese los valores de 'x' separados por comas: ")
-    y_valores = input("Ingrese los valores de 'y' separados por comas: ")
-    x_valores = np.array([float(x.strip()) for x in x_valores.split(",")])
-    y_valores = np.array([float(y.strip()) for y in y_valores.split(",")])
-    return x_valores, y_valores
+# Función para pedir cifras (números reales)
+def pedir_cifras(mensaje):
+    while True:
+        valor = input(mensaje)
+        if valor.strip():
+            try:
+                numero = sympify(valor)
+                if numero.is_real:
+                    return float(numero)
+                else:
+                    print("Error: Ingresa un número real válido.")
+            except (ValueError, TypeError):
+                print("Error: Ingresa un número válido.")
+        else:
+            print("Error: No puedes dejar este campo vacío.")
 
+def pedir_lista_cifras(mensaje):
+    while True:
+        valores = input(mensaje)
+        try:
+            lista_valores = [float(val) for val in valores.split(',')]
+            return lista_valores
+        except ValueError:
+            print("Error: Por favor, ingrese números válidos separados por comas.")
 
-def trazador_cubico_grado1(x, y):
+# Trazador Cúbico Grado Uno
+def trazador_cubico_grado_uno(x, y):
+    print("TRAZADORES CUBICOS, GRADO UNO")
+
     n = len(x)
-    a = y[0]
-    h = np.diff(x)
-    b = np.diff(y) / h
+    A = np.zeros((2*(n-1), 2*(n-1)))
+    B = np.zeros(2*(n-1))
     
-    trazadores = []
+    ecuacion = 0
     for i in range(n - 1):
-        trazador = "{:.2f} + {:.2f}(x - {:.2f})".format(a, b[i], x[i])
-        trazadores.append(trazador)
-        a = y[i] + b[i] * (x[i+1] - x[i]) 
+        A[ecuacion, 2*i] = x[i]
+        A[ecuacion, 2*i + 1] = 1
+        B[ecuacion] = y[i]
+        ecuacion += 1
         
-    return trazadores
+        A[ecuacion, 2*i] = x[i + 1]
+        A[ecuacion, 2*i + 1] = 1
+        B[ecuacion] = y[i + 1]
+        ecuacion += 1
+    
+    coeficientes = np.linalg.solve(A, B)
+    
+    a = coeficientes[::2]
+    b = coeficientes[1::2]
+    
+    for i in range(len(a)):
+        print(f"s(x) = {a[i]}x + {b[i]} en el intervalo [{x[i]}, {x[i+1]}]")
+    
+    return a, b
 
-def trazador_cubico_grado2(x, y):
-    n = len(x)
-    h = np.diff(x)
-    alfa = np.zeros(n)
-    for i in range(1, n-1):
-        alfa[i] = 3 * ((y[i+1] - y[i])/h[i]) - 3 * ((y[i] - y[i-1])/h[i-1])
-    l = np.zeros(n)
-    miu = np.zeros(n)
-    z = np.zeros(n)
-    l[0] = 1
-    miu[0] = 0
-    z[0] = 0
-    for i in range(1, n-1):
-        l[i] = 2 * (x[i+1] - x[i-1]) - h[i-1] * miu[i-1]
-        miu[i] = h[i] / l[i]
-        z[i] = (alfa[i] - h[i-1] * z[i-1]) / l[i]
-    l[n-1] = 1
-    z[n-1] = 0
-    b = np.zeros(n)
-    c = np.zeros(n+1)
-    d = np.zeros(n)
-    c[n-1] = 0
-    for j in range(n-2, -1, -1):
-        c[j] = z[j] - miu[j] * c[j+1]
-        b[j] = ((y[j+1] - y[j])/h[j]) - h[j] * (c[j+1] + 2 * c[j]) / 3
-        d[j] = (c[j+1] - c[j]) / (3 * h[j])
+# Trazador Cúbico Grado Dos
+def calcular_trazador_cubico_grado_dos(x, y):
+    print("\nTRAZADORES CUBICOS, GRADO DOS")
+
+    def trazador_cuadratico(x, y):
+        n = len(x)
+        A = np.zeros((3*(n-1), 3*(n-1)))
+        B = np.zeros(3*(n-1))
         
-    trazadores = []
-    for i in range(n - 1):
-        trazador = "{:.2f}x^2 + {:.2f}x + {:.2f}".format(y[i], b[i], c[i])
-        trazadores.append(trazador)
+        ecuacion = 0
+        for i in range(n - 1):
+            A[ecuacion, 3*i] = x[i]**2
+            A[ecuacion, 3*i + 1] = x[i]
+            A[ecuacion, 3*i + 2] = 1
+            B[ecuacion] = y[i]
+            ecuacion += 1
+            
+            A[ecuacion, 3*i] = x[i + 1]**2
+            A[ecuacion, 3*i + 1] = x[i + 1]
+            A[ecuacion, 3*i + 2] = 1
+            B[ecuacion] = y[i + 1]
+            ecuacion += 1
         
-    return trazadores
-
-def trazador_cubico_grado3(x, y):
-    n = len(x)
-    h = np.diff(x)
-    alfa = np.zeros(n)
-    for i in range(1, n-1):
-        alfa[i] = 3 * ((y[i+1] - y[i])/h[i]) - 3 * ((y[i] - y[i-1])/h[i-1])
-    l = np.zeros(n)
-    miu = np.zeros(n)
-    z = np.zeros(n)
-    l[0] = 1
-    miu[0] = 0
-    z[0] = 0
-    for i in range(1, n-1):
-        l[i] = 2 * (x[i+1] - x[i-1]) - h[i-1] * miu[i-1]
-        miu[i] = h[i] / l[i]
-        z[i] = (alfa[i] - h[i-1] * z[i-1]) / l[i]
-    l[n-1] = 1
-    z[n-1] = 0
-    b = np.zeros(n)
-    c = np.zeros(n+1)
-    d = np.zeros(n)
-    c[n-1] = 0
-    for j in range(n-2, -1, -1):
-        c[j] = z[j] - miu[j] * c[j+1]
-        b[j] = ((y[j+1] - y[j])/h[j]) - h[j] * (c[j+1] + 2 * c[j]) / 3
-        d[j] = (c[j+1] - c[j]) / (3 * h[j])
+        # Derivadas
+        for i in range(1, n - 1):
+            A[ecuacion, 3*(i-1)] = 2 * x[i]
+            A[ecuacion, 3*(i-1) + 1] = 1
+            A[ecuacion, 3*i] = -2 * x[i]
+            A[ecuacion, 3*i + 1] = -1
+            ecuacion += 1
         
-    trazadores = []
-    for i in range(n - 1):
-        trazador = "{:.2f}x^3 + {:.2f}x^2 + {:.2f}x + {:.2f}".format(y[i], b[i], c[i], d[i])
-        trazadores.append(trazador)
+        # c0 = 0
+        A[ecuacion, 2] = 1
+        B[ecuacion] = 0
         
-    return trazadores
+        # Resolver el sistema
+        coeficientes = np.linalg.solve(A, B)
+        
+        a = coeficientes[::3]
+        b = coeficientes[1::3]
+        c = coeficientes[2::3]
+        
+        return a, b, c
 
-print("-"*70)
-print("                     Trazadores Cubicos")
-print("-"*70)
-# Entrada de datos
-x,y=pedir_tabla()
-# Validación de entrada
-if len(x) != len(y):
-    print("Error: Las listas X y Y deben tener la misma longitud.")
-else:
-    # Selección del grado del trazador
-    opcion = input("¿Qué trazador cúbico desea implementar? (grado1, grado2, grado3): ")
+    def evaluar_trazador(x_val, x, a, b, c):
+        for i in range(len(a)):
+            if x[i] <= x_val <= x[i+1]:
+                return a[i] * x_val**2 + b[i] * x_val + c[i]
+        raise ValueError("x está fuera del rango del trazador cuadrático")
 
-    # Salida
-    if opcion == "grado1":
-        trazadores = trazador_cubico_grado1(x, y)
-    elif opcion == "grado2":
-        trazadores = trazador_cubico_grado2(x, y)
-    elif opcion == "grado3":
-        trazadores = trazador_cubico_grado3(x, y)
-    else:
-        print("Opción no válida")
+    a, b, c = trazador_cuadratico(x, y)
 
-    print("-"*70)
-    # Impresión de resultados
-    for i, trazador in enumerate(trazadores):
-        print("Trazador para el intervalo [", x[i], ",", x[i+1], "]:", trazador)
+    for i in range(len(a)):
+        print(f"s(x) = {a[i]}x^2 + {b[i]}x + {c[i]} en el intervalo [{x[i]}, {x[i+1]}]")
+
+    return a, b, c, evaluar_trazador
+
+# Trazador Cúbico Grado Tres
+def calcular_trazador_cubico_grado_tres(x, y):
+    print("TRAZADORES CUBICOS, GRADO TRES")
+
+    def trazador_cubico(x, y):
+        n = len(x)
+        A = np.zeros((4*(n-1), 4*(n-1)))
+        B = np.zeros(4*(n-1))
+        
+        ecuacion = 0
+        for i in range(n - 1):
+            A[ecuacion, 4*i] = x[i]**3
+            A[ecuacion, 4*i + 1] = x[i]**2
+            A[ecuacion, 4*i + 2] = x[i]
+            A[ecuacion, 4*i + 3] = 1
+            B[ecuacion] = y[i]
+            ecuacion += 1
+            
+            A[ecuacion, 4*i] = x[i + 1]**3
+            A[ecuacion, 4*i + 1] = x[i + 1]**2
+            A[ecuacion, 4*i + 2] = x[i + 1]
+            A[ecuacion, 4*i + 3] = 1
+            B[ecuacion] = y[i + 1]
+            ecuacion += 1
+        
+        # 1ra derivada
+        for i in range(1, n - 1):
+            A[ecuacion, 4*(i-1)] = 3 * x[i]**2
+            A[ecuacion, 4*(i-1) + 1] = 2 * x[i]
+            A[ecuacion, 4*(i-1) + 2] = 1
+            A[ecuacion, 4*(i-1) + 3] = 0
+            A[ecuacion, 4*i] = -3 * x[i]**2
+            A[ecuacion, 4*i + 1] = -2 * x[i]
+            A[ecuacion, 4*i + 2] = -1
+            A[ecuacion, 4*i + 3] = 0
+            ecuacion += 1
+        
+        # 2da derivada
+        for i in range(1, n - 1):
+            A[ecuacion, 4*(i-1)] = 6 * x[i]
+            A[ecuacion, 4*(i-1) + 1] = 2
+            A[ecuacion, 4*(i-1) + 2] = 0
+            A[ecuacion, 4*(i-1) + 3] = 0
+            A[ecuacion, 4*i] = -6 * x[i]
+            A[ecuacion, 4*i + 1] = -2
+            A[ecuacion, 4*i + 2] = 0
+            A[ecuacion, 4*i + 3] = 0
+            ecuacion += 1
+        
+        # Condiciones para extremos
+        A[ecuacion, 0] = 6 * x[0]
+        A[ecuacion, 1] = 2
+        B[ecuacion] = 0
+        ecuacion += 1
+        
+        A[ecuacion, -4] = 6 * x[-1]
+        A[ecuacion, -3] = 2
+        B[ecuacion] = 0
+        
+        # Resolver sistema
+        coeficientes = np.linalg.solve(A, B)
+        
+        a = coeficientes[::4]
+        b = coeficientes[1::4]
+        c = coeficientes[2::4]
+        d = coeficientes[3::4]
+        
+        return a, b, c, d
+
+    def evaluar_trazador(x_val, x, a, b, c, d):
+        for i in range(len(a)):
+            if x[i] <= x_val <= x[i+1]:
+                return a[i] * x_val**3 + b[i] * x_val**2 + c[i] * x_val + d[i]
+        raise ValueError("x está fuera del rango del trazador cúbico")
+
+    a, b, c, d = trazador_cubico(x, y)
+
+    for i in range(len(a)):
+        print(f"s(x) = {a[i]}x^3 + {b[i]}x^2 + {c[i]}x + {d[i]} en el intervalo [{x[i]}, {x[i+1]}]")
+
+    return a, b, c, d, evaluar_trazador
+
+# Función principal con menú interactivo
+def main_trazadores():
+    print("Trazadores Cúbicos")
+
+    # Menú principal
+    while True:
+        print("\nSeleccione el Grado del Trazador Cúbico:")
+        print("1. Trazador Cúbico Grado Uno")
+        print("2. Trazador Cúbico Grado Dos")
+        print("3. Trazador Cúbico Grado Tres")
+        print("4. Salir")
+
+        opcion_metodo = input("Ingrese el número de opción: ")
+
+        if opcion_metodo == "1":
+            x = pedir_lista_cifras("Ingrese los valores de x separados por comas: ")
+            y = pedir_lista_cifras("Ingrese los valores de y separados por comas: ")
+            trazador_cubico_grado_uno(x, y)
+
+        elif opcion_metodo == "2":
+            x = pedir_lista_cifras("Ingrese los valores de x separados por comas: ")
+            y = pedir_lista_cifras("Ingrese los valores de y separados por comas: ")
+            calcular_trazador_cubico_grado_dos(x, y)
+
+        elif opcion_metodo == "3":
+            x = pedir_lista_cifras("Ingrese los valores de x separados por comas: ")
+            y = pedir_lista_cifras("Ingrese los valores de y separados por comas: ")
+            calcular_trazador_cubico_grado_tres(x, y)
+
+        elif opcion_metodo == "4":
+            print("Saliendo del programa...")
+            break
+
+        else:
+            print("Opción no válida. Por favor, inténtelo de nuevo.")
+
+if __name__ == "__main__":
+    main_trazadores()

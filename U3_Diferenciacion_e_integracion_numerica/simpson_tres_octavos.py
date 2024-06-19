@@ -1,6 +1,15 @@
 import sympy
 from tabulate import tabulate
-from pedir_funcion import pedir_funcion
+import re
+
+def pedir_funcion():
+    allowed_chars = r"[a-zA-Z\s\+\-\*/\^0-9\(\)\.,]"
+    while True:
+        funcion = input("Ingrese la función (solo se permiten letras y caracteres matemáticos): ")
+        if re.match(allowed_chars, funcion):
+            return funcion
+        else:
+            print("Función inválida. Por favor, inténtelo de nuevo.")
 
 # Función para el método de Simpson simple ajustado según la nueva fórmula
 def Simpson_simple(f, a, b):

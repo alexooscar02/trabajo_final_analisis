@@ -80,9 +80,9 @@ def calcular_lagrange():
     print(f"Polinomio reducido P(x) = {lagrange_poli_exp}\n")
 
     resultado = lagrange_poli.subs(x, punto).evalf()
-    print(f"P({punto}) = {round(resultado)}")
+    print(f"P({punto}) = {resultado}")
 
     return lagrange_poli_exp, resultado
 
 # Ejecutar la función principal
-calcular_lagrange()
+

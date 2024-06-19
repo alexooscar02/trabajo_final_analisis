@@ -1,90 +1,74 @@
-from sympy import symbols, simplify, diff, log
-from pedir_funcion import pedir_funcion  # Suponiendo que pedir_funcion es una función que obtiene y valida la función ingresada por el usuario
-from pedir_tabla_her import pedir_tabla_her  # Suponiendo que pedir_tabla_her es una función que obtiene y valida la tabla ingresada por el usuario
+import numpy as np
+import pandas as pd
+from sympy import symbols, diff, lambdify, expand, cos, sin, exp, log
+from sympy.parsing.sympy_parser import parse_expr
+from math import factorial
 
-x = symbols("x")
-
-def hermite_dife(valores_x, valores_y, derivadas):
-    n = len(valores_x)
+def generate_divided_differences_table(f, x_vals, derivatives_count):
+    x = symbols('x')
+    f_expr = parse_expr(f, local_dict={'cos': cos, 'sin': sin, 'exp': exp, 'log': log, 'x': x})
     
-    # Verificar que derivadas tiene la misma longitud que valores_x
-    if len(derivadas) != n and derivadas != []:
-        raise ValueError("La lista de derivadas no tiene la misma longitud que la lista de valores_x")
+    # Crear las derivadas necesarias
+    f_prime = [f_expr] + [diff(f_expr, x, i) for i in range(1, derivatives_count + 1)]
     
-    tabla = [[0]*(2*n) for _ in range(2*n)]
-
-    for i in range(n):
-        tabla[2*i][0] = valores_y[i]
-        tabla[2*i + 1][0] = valores_y[i]
-
-    for i in range(n):
-        tabla[2*i + 1][1] = derivadas[i] if derivadas else 0  # Si derivadas está vacío, asignamos cero
-
-    for j in range(1, 2*n):
-        for i in range(2*n-j):
-            if j % 2 == 0:
-                tabla[i][j] = (tabla[i + 1][j - 1] - tabla[i][j - 1]) / (valores_x[i//2 + j//2] - valores_x[i//2])
+    n = len(x_vals) * (derivatives_count + 1)
+    X = np.repeat(x_vals, derivatives_count + 1)
+    Y = np.zeros(n)
+    
+    index = 0
+    for i in range(len(x_vals)):
+        for j in range(derivatives_count + 1):
+            if j == 0:  # Valor de la función en el punto
+                Y[index] = lambdify(x, f_prime[0], modules=['numpy'])(x_vals[i])
+            else:  # Derivada en el punto
+                Y[index] = lambdify(x, f_prime[j], modules=['numpy'])(x_vals[i])
+            index += 1
+    
+    Q = np.zeros((n, n))
+    Q[:, 0] = Y
+    
+    for i in range(1, n):
+        if X[i] == X[i-1]:
+            Q[i, 1] = Y[i] / factorial(int(i % (derivatives_count + 1)))
+        else:
+            Q[i, 1] = (Q[i, 0] - Q[i-1, 0]) / (X[i] - X[i-1])
+    
+    for j in range(2, n):
+        for i in range(j, n):
+            if X[i] == X[i-j]:
+                Q[i, j] = lambdify(x, diff(f_expr, x, j-1), modules=['numpy'])(X[i]) / factorial(j-1)
             else:
-                tabla[i][j] = (tabla[i + 1][j - 1] - tabla[i][j - 1])
-    return tabla
-
-def Hermite(x, valores_x, tabla):
-    n = len(valores_x)
-    polinomio = 0
-    for j in range(2*n):
-        terminos = tabla[0][j]
-        for i in range(j):
-            terminos *= (x - valores_x[i//2])
-        polinomio += terminos
-    return simplify(polinomio)
-
-def main():
-    print("-"*90)
-    print("                  Interpolación de Hermite  ")
-    print("-"*90)
-    opcion = input("¿Cómo desea realizar la interpolación? (funcion/tabla): ")
+                Q[i, j] = (Q[i, j-1] - Q[i-1, j-1]) / (X[i] - X[i-j])
     
-    if opcion.lower() == 'funcion':
-        print("-"*50)
-        funcion = pedir_funcion()
-        valores_x = [float(x.strip()) for x in input("Ingrese los valores de 'x' separados por comas: ").split(",")]
-        
-        # Define X como un símbolo de SymPy
-        X = symbols('X')
-        
-        # Evalúa la función utilizando log de SymPy
-        valores_y = [log(X).subs(X, xi) for xi in valores_x]
+    return X, Y, Q
 
-        derivadas = []  # No se necesitan derivadas en este caso
+def build_hermite_polynomial(X, Q):
+    coeffs = Q.diagonal()
+    x = symbols('x')
+    hermite_poly = coeffs[0]
+    for i in range(1, len(coeffs)):
+        term = coeffs[i]
+        for j in range(i):
+            term *= (x - X[j])
+        hermite_poly += term
+    return expand(hermite_poly)
 
-        tabla = hermite_dife(valores_x, valores_y, derivadas)
-        poli = Hermite(x, valores_x, tabla)
-
-        print("-"*90)
-        print("             Polinomio de Hermite  ")
-        print("-"*90)
-        print("P(x) =", poli)
-
-    elif opcion.lower() == 'tabla':
-        valores_x, valores_y = pedir_tabla_her()  # Obtiene los valores de la tabla ingresada por el usuario
-
-        # Obtén derivadas si es necesario
-        derivadas = [diff(valores_y[i], x).subs(x, valores_x[i]) for i in range(len(valores_x))]
-
-        if len(derivadas) != len(valores_x):
-            raise ValueError("La lista de derivadas no tiene la misma longitud que la lista de valores_x")
-
-        tabla = hermite_dife(valores_x, valores_y, derivadas)
-        poli = Hermite(x, valores_x, tabla)
-
-        print("-"*90)
-        print("             Polinomio de Hermite  ")
-        print("-"*90)
-        print("P(x) =", poli)
-
-    else:
-        print("Opción no válida. Por favor, elija 'funcion' o 'tabla'.")
+def main_hermite():
+    f = input("Ingrese la función f(x): ")
+    x_vals = list(map(float, input("Ingrese los valores de x separados por comas: ").split(',')))
+    derivatives_count = int(input("Ingrese el número máximo de derivadas: "))
+    
+    X, Y, Q = generate_divided_differences_table(f, x_vals, derivatives_count)
+    hermite_poly = build_hermite_polynomial(X, Q)
+    
+    df = pd.DataFrame(Q, columns=[f'Diferencia {i}' for i in range(Q.shape[1])])
+    df.insert(0, 'Y', Y)
+    df.insert(0, 'x', X)
+    
+    print("\nTabla de diferencias divididas:")
+    print(df)
+    
+    print(f"\nEl polinomio de Hermite es: {hermite_poly}")
 
 if __name__ == "__main__":
-    main()
-
+    main_hermite()

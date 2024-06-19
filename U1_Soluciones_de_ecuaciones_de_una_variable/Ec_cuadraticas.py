@@ -34,6 +34,7 @@ def pedir_funcion():
             print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
 
 def calcular_ec_cuadratica():
+    print("\t\t\n ECUACIONES CUADRATICAS")
     coeficientes, expr = pedir_funcion()
     a, b, c = coeficientes
 
@@ -48,6 +49,4 @@ def calcular_ec_cuadratica():
         raiz1 = (-b + cmath.sqrt(discriminante)) / (2*a)
         raiz2 = (-b - cmath.sqrt(discriminante)) / (2*a)
 
-    print(f"Las raíces de la ecuación son: {raiz1} y {raiz2}")
-
-calcular_ec_cuadratica()
+    print(f"Las raíces de la ecuación son: {raiz1} y {raiz2}\n")

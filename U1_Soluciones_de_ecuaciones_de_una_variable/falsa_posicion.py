@@ -48,6 +48,7 @@ def pedir_cifras(mensaje):
             print("Error: No puedes dejar este campo vacío.")
 
 def calcular_falsa_posicion():
+    print("\t\t\n METODO DE LA FALSA POSISCION")
     iteracion = 1
     df = pd.DataFrame(columns=["Iteración", "xa", "xb", "xr", "f(xa)", "f(xb)", "f(xr)", "f(xa)*f(xr)", "Condición", "Ea"])
 
@@ -108,4 +109,3 @@ def calcular_falsa_posicion():
     print(df)
     print(f"La raíz de la ecuación es {xr} con un error de {Ea}% en la {iteracion-1}° iteración")
 
-calcular_falsa_posicion()

@@ -96,5 +96,3 @@ def calcular_newton_raphson():
     else:
         print("El criterio de convergencia no cumple.")
 
-calcular_newton_raphson()
-

@@ -123,4 +123,4 @@ def calcular_biseccion():
     print(df)
     print(f"La raíz de la ecuación es {xr} con un error de {Ea} en la {iteracion-1}° iteración.")
 
-calcular_biseccion()
+

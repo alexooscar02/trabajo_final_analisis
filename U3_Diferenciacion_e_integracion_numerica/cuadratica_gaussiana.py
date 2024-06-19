@@ -1,17 +1,30 @@
 import numpy as np
 import sympy as sp
 from numpy.polynomial.legendre import leggauss
+from sympy import sympify, symbols, lambdify, Poly, parse_expr
+from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
+
 
 import re
 
-def pedir_funcion():
-    allowed_chars = r"[a-zA-Z\s\+\-\*/\^0-9\(\)\.,]"
+def pedir_funcion(mensaje):
+    transformations = standard_transformations + (split_symbols, implicit_multiplication, convert_xor)
     while True:
-        funcion = input("Ingrese la función (solo se permiten letras y caracteres matemáticos): ")
-        if re.match(allowed_chars, funcion):
-            return funcion
+        expr_str = input(mensaje)
+        if all(c not in expr_str for c in "#$%&\"'_`~{}[]@¿¡!?°|;:<>"):
+            valid_chars_pattern = re.compile(r'^[a-zA-Z0-9\s\+\-\*/\^\(\)\|\.,]*$')
+            if valid_chars_pattern.match(expr_str):
+                try:
+                    expr = parse_expr(expr_str, transformations=transformations)
+                    exp_pol = Poly(expr)
+                    print(f"➣ Ecuacion: {exp_pol}\n")
+                    return expr
+                except:
+                    print("Error: La función ingresada no es válida. Por favor, inténtalo de nuevo.")
+            else:
+                print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
         else:
-            print("Función inválida. Por favor, inténtelo de nuevo.")
+            print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
 
 def cuadratica_gaussiana(funcion, a, b, nodos, pesos):
     x = sp.symbols('x')
@@ -36,13 +49,13 @@ def cuadratica_gaussiana(funcion, a, b, nodos, pesos):
     except Exception as e:
         print(f"Error al calcular la integral: {str(e)}")
 
-def main():
+def main_gauss():
     print("-" * 150)
     print("Cuadrática Gaussiana Personalizada".center(150))
     print("-" * 150)
     
     # Pidiendo la función
-    funcion_str = pedir_funcion()
+    funcion_str = pedir_funcion("Digite la funcion: ")
     print("-" * 150)
     
     # Pidiendo los intervalos al usuario
@@ -75,4 +88,4 @@ def main():
         print(f"El valor aproximado de la integral ∫ {funcion_str} dx en el intervalo [{a}, {b}] utilizando cuadratura Gaussiana es: {integral_approx}")
 
 if __name__ == "__main__":
-    main()
+    main_gauss()

@@ -79,7 +79,7 @@ def calcular_secante():
     print(df)
     print(f"La raíz de la ecuación es {xi_futura} con un error de {Ea}% en la {iteracion-1}° iteración")
 
-calcular_secante()
+
 
 
 
