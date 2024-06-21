@@ -1,34 +1,47 @@
 import numpy as np
 import pandas as pd
-from sympy import symbols, diff, expand, factorial
+from sympy import symbols, diff, lambdify, expand, cos, sin, exp, log
+from sympy.parsing.sympy_parser import parse_expr
+from math import factorial
 
-# Función para generar la tabla de diferencias divididas para Hermite
-def generate_divided_differences_table(x_vals, y_vals, derivatives):
-    n = len(x_vals) * 2  # Duplicamos cada punto por el valor y la derivada
-    X = np.zeros(n)
+def generate_divided_differences_table(f, x_vals, derivatives_count):
+    x = symbols('x')
+    f_expr = parse_expr(f, local_dict={'cos': cos, 'sin': sin, 'exp': exp, 'log': log, 'x': x})
+
+    # Crear las derivadas necesarias
+    f_prime = [f_expr] + [diff(f_expr, x, i) for i in range(1, derivatives_count + 1)]
+
+    n = len(x_vals) * (derivatives_count + 1)
+    X = np.repeat(x_vals, derivatives_count + 1)
     Y = np.zeros(n)
-    
-    # Llenar X y Y con valores y sus derivadas
+
+    index = 0
     for i in range(len(x_vals)):
-        X[2 * i] = x_vals[i]
-        X[2 * i + 1] = x_vals[i]
-        Y[2 * i] = y_vals[i]
-        Y[2 * i + 1] = y_vals[i]
-    
+        for j in range(derivatives_count + 1):
+            if j == 0:  # Valor de la función en el punto
+                Y[index] = lambdify(x, f_prime[0], modules=['numpy'])(x_vals[i])
+            else:  # Derivada en el punto
+                Y[index] = lambdify(x, f_prime[j], modules=['numpy'])(x_vals[i])
+            index += 1
+
     Q = np.zeros((n, n))
     Q[:, 0] = Y
 
-    # Primeras diferencias divididas (considerando derivadas)
     for i in range(1, n):
-        for j in range(1, i + 1):
-            if X[i] == X[i - j]:
-                Q[i, j] = derivatives[i // 2][0] / factorial(j)
+        if X[i] == X[i-1]:
+            Q[i, 1] = Y[i] / factorial(int(i % (derivatives_count + 1)))
+        else:
+            Q[i, 1] = (Q[i, 0] - Q[i-1, 0]) / (X[i] - X[i-1])
+
+    for j in range(2, n):
+        for i in range(j, n):
+            if X[i] == X[i-j]:
+                Q[i, j] = lambdify(x, diff(f_expr, x, j-1), modules=['numpy'])(X[i]) / factorial(j-1)
             else:
-                Q[i, j] = (Q[i, j - 1] - Q[i - 1, j - 1]) / (X[i] - X[i - j])
-    
+                Q[i, j] = (Q[i, j-1] - Q[i-1, j-1]) / (X[i] - X[i-j])
+
     return X, Y, Q
 
-# Función para construir el polinomio de Hermite
 def build_hermite_polynomial(X, Q):
     coeffs = Q.diagonal()
     x = symbols('x')
@@ -40,33 +53,22 @@ def build_hermite_polynomial(X, Q):
         hermite_poly += term
     return expand(hermite_poly)
 
-def main_hermite():
-    # Solicitar los valores de x
+def main():
+    f = input("Ingrese la función f(x): ")
     x_vals = list(map(float, input("Ingrese los valores de x separados por comas: ").split(',')))
-    
-    # Solicitar los valores de y
-    y_vals = list(map(float, input("Ingrese los valores de y correspondientes, separados por comas: ").split(',')))
-    
-    # Solicitar las derivadas
-    derivatives = []
-    for i in range(len(x_vals)):
-        print(f"Ingrese las derivadas para x = {x_vals[i]}")
-        derivs = list(map(float, input("Derivadas (y'): ").split(',')))
-        derivatives.append(derivs)
+    derivatives_count = int(input("Ingrese el número máximo de derivadas: "))
 
-    # Generar la tabla de diferencias divididas y el polinomio de Hermite
-    X, Y, Q = generate_divided_differences_table(x_vals, y_vals, derivatives)
+    X, Y, Q = generate_divided_differences_table(f, x_vals, derivatives_count)
     hermite_poly = build_hermite_polynomial(X, Q)
-    
-    # Crear un DataFrame para visualizar la tabla
+
     df = pd.DataFrame(Q, columns=[f'Diferencia {i}' for i in range(Q.shape[1])])
     df.insert(0, 'Y', Y)
     df.insert(0, 'x', X)
-    
+
     print("\nTabla de diferencias divididas:")
     print(df)
-    
+
     print(f"\nEl polinomio de Hermite es: {hermite_poly}")
 
 if __name__ == "__main__":
-    main_hermite()
+    main()

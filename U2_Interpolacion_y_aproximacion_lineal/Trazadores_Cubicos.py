@@ -114,8 +114,9 @@ def calcular_trazador_cubico_grado_dos(x, y):
     return a, b, c, evaluar_trazador
 
 # Trazador Cúbico Grado Tres
+# Trazador Cúbico Grado Tres
 def calcular_trazador_cubico_grado_tres(x, y):
-    print("TRAZADORES CUBICOS, GRADO TRES")
+    print("\nTRAZADORES CUBICOS, GRADO TRES")
 
     def trazador_cubico(x, y):
         n = len(x)
