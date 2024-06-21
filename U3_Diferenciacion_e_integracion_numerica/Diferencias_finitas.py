@@ -1,16 +1,40 @@
 import math
 import re
+from sympy import *
+import sympy as sp
+from sympy import symbols, Poly, parse_expr
+from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication_application, convert_xor
+import re
 
-def pedir_funcion():
-    allowed_chars = r"^[a-zA-Z0-9\s\+\-\*/\^()\.]*$"
+x = symbols('x')
+
+def pedir_funcion(mensaje):
+    # Definir transformaciones
+    transformations = (standard_transformations + (implicit_multiplication_application,))
     while True:
-        funcion = input("Ingrese la función (solo se permiten letras y caracteres matemáticos): ")
-        # Reemplazar ln por math.log en la cadena de entrada
-        funcion = funcion.replace('ln', 'math.log')
-        if re.match(allowed_chars, funcion):
-            return funcion
-        else:
-            print("Función inválida. Por favor, inténtelo de nuevo.")
+        try:
+            # Solicitar expresión al usuario
+            expr_str = input(mensaje)
+            # Verificar caracteres válidos
+            valid_chars_pattern = re.compile(r'^[a-zA-Z0-9\s\+\-\*/\^\(\)\.,]*$')
+            if valid_chars_pattern.match(expr_str):
+                # Parsear la expresión
+                expr = parse_expr(expr_str, transformations=transformations, evaluate=False)
+                # Mostrar la ecuación
+                print(f"➣ Ecuacion: {expr}")
+                return expr
+            else:
+                print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
+        except Exception as e:
+            print(f"Error: La función ingresada no es válida ({e}). Por favor, inténtalo de nuevo.")
+
+def convertir_a_funcion(expr):
+    try:
+        # Convertir la expresión a una función evaluable
+        funcion = lambdify(x, expr, modules=["math", "sympy"])
+        return funcion
+    except Exception as e:
+        print(f"Error al convertir la expresión a función: {e}")
 
 
 # Diferencias Divididas Hacia Atrás
@@ -287,17 +311,15 @@ def main_diferencias_finitas():
     print("-" * 120)
 
     # Solicitar la función al usuario
-    funcion_str = pedir_funcion()
-
-    # Convertir la cadena de la función en una función de Python real
-    f = eval("lambda x: " + funcion_str)
+    expr = pedir_funcion("Ingrese la función (por ejemplo, exp(x) o sin(x) + x**2): ")
+    f = convertir_a_funcion(expr)
     
     print("-" * 120)
     h = float(input("Ingrese el tamaño del paso h: "))
-    x = float(input("Ingrese el valor de x en el que desea evaluar la derivada: "))
+    x_val = float(input("Ingrese el valor de x en el que desea evaluar la derivada: "))
     print("-" * 120)
 
-    # Solicitar al usuario la derivada que desea calcular 
+    # Solicitar al usuario la derivada que desea calcular
     tipo_derivada = input("¿Qué derivada desea calcular? (Ingrese el número de la derivada)\n1-Primera derivada\n2-Segunda derivada\n3-Tercera derivada\n4-Cuarta derivada\nDeseo: ")
     print("-" * 120)
 
@@ -306,60 +328,57 @@ def main_diferencias_finitas():
         metodo = input("¿Qué diferencia finita desea implementar? (Atras, Adelante, Centrada, 3 Puntos, 5 Puntos): ")
         if metodo == "Atras":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = primeraderi_formula1(f, x, h, formula)
+            resultado = primeraderi_formula1(f, x_val, h, formula)
         elif metodo == "Adelante":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = prideri_haciaadelante1(f, x, h, formula)
+            resultado = prideri_haciaadelante1(f, x_val, h, formula)
         elif metodo == "Centrada":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = primedi_centrada1(f, x, h, formula)
+            resultado = primedi_centrada1(f, x_val, h, formula)
         elif metodo == "3 Puntos":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = primtres_puntos_1(f, x, h, formula)
+            resultado = primtres_puntos_1(f, x_val, h, formula)
         elif metodo == "5 Puntos":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\tformula3\tformula4\tformula5\nDeseo: ")
-            resultado = pricinco_puntos1(f, x, h, formula)
+            resultado = pricinco_puntos1(f, x_val, h, formula)
     elif tipo_derivada == "2":
         metodo = input("¿Qué diferencia finita desea implementar? (Atras, Adelante, Centrada): ")
         if metodo == "Atras":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = segundaderi_formula1(f, x, h, formula)
+            resultado = segundaderi_formula1(f, x_val, h, formula)
         elif metodo == "Adelante":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = seguderi_hacia_adelante1(f, x, h, formula)
+            resultado = seguderi_hacia_adelante1(f, x_val, h, formula)
         elif metodo == "Centrada":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = seguderi_centrada1(f, x, h, formula)
+            resultado = seguderi_centrada1(f, x_val, h, formula)
     elif tipo_derivada == "3":
         metodo = input("¿Qué diferencia finita desea implementar? (Atras, Adelante, Centrada): ")
         if metodo == "Atras":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = treceraderi_formula1(f, x, h, formula)
+            resultado = treceraderi_formula1(f, x_val, h, formula)
         elif metodo == "Adelante":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = tercderi_hacia_adelante1(f, x, h, formula)
+            resultado = tercderi_hacia_adelante1(f, x_val, h, formula)
         elif metodo == "Centrada":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = terderi_centrada1(f, x, h, formula)
+            resultado = terderi_centrada1(f, x_val, h, formula)
     elif tipo_derivada == "4":
         metodo = input("¿Qué diferencia finita desea implementar? (Atras, Adelante, Centrada): ")
         if metodo == "Atras":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = cuartaderi_formula1(f, x, h, formula)
+            resultado = cuartaderi_formula1(f, x_val, h, formula)
         elif metodo == "Adelante":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = cuarderi_hacia_adelante1(f, x, h, formula)
+            resultado = cuarderi_hacia_adelante1(f, x_val, h, formula)
         elif metodo == "Centrada":
             formula = input("¿Qué fórmula desea implementar?\nformula1\tformula2\nDeseo: ")
-            resultado = cuarderi_centrada(f, x, h, formula)
-    else:
-        print("Derivada inválida")
+            resultado = cuarderi_centrada(f, x_val, h, formula)
 
-    print("-" * 120)
     if resultado is not None:
-        print("El resultado de la Diferencia Finita es: ", resultado)
+        print(f"El resultado de la derivada en x = {x_val} es: {resultado}")
     else:
-        print("No se pudo calcular el resultado debido a una entrada inválida.")
+        print("No se pudo calcular la derivada. Verifique los parámetros ingresados.")
 
-if __name__ == "__main__":
-    main_diferencias_finitas()
+# Llamada a la función principal
+main_diferencias_finitas()
