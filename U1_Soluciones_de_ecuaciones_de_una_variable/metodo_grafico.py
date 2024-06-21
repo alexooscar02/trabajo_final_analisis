@@ -2,6 +2,7 @@ import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
+import matplotlib as mpl
 
 x = sp.symbols('x')
 
@@ -28,7 +29,7 @@ def calcular_metodo_grafico():
     while not tiene_raices_reales:
        
         f_x = pedir_funcion()
-
+        mpl.use("TkAgg")
         roots = sp.solve(f_x, x)
 
         # Filtrar raíces reales e imaginarias

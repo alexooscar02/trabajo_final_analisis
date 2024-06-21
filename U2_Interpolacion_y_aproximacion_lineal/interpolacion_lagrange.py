@@ -47,6 +47,7 @@ def calcular_lagrange():
     if opcion == 1:
         xk = pedir_valores("xk")
         yk = pedir_valores("yk")
+        funcion = None
     elif opcion == 2:
         funcion = pedir_funcion("Ingrese la función f(x): ")
         xk = pedir_valores("xk")
@@ -82,7 +83,18 @@ def calcular_lagrange():
     resultado = lagrange_poli.subs(x, punto).evalf()
     print(f"P({punto}) = {resultado}")
 
+    if funcion is not None:
+        valor_real = funcion.subs(x, punto).evalf()
+        error_teorico = valor_real - resultado
+        error_porcentual = abs(error_teorico / valor_real) * 100
+        print(f"\nValor real f({punto}) = {valor_real}")
+        print(f"Error teórico: {error_teorico}")
+        print(f"Error porcentual: {error_porcentual}%")
+    else:
+        print("No se puede calcular el error teórico y porcentual sin la función original.")
+
     return lagrange_poli_exp, resultado
 
 # Ejecutar la función principal
-
+if __name__ == "__main__":
+    calcular_lagrange()

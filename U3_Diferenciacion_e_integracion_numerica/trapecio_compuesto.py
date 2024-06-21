@@ -1,5 +1,5 @@
-import sympy
-from sympy import symbols, lambdify, sympify
+from sympy import symbols, sympify, lambdify
+from tabulate import tabulate
 import re
 
 def pedir_funcion():
@@ -10,133 +10,182 @@ def pedir_funcion():
             return funcion
         else:
             print("Función inválida. Por favor, inténtelo de nuevo.")
-
-def pedir_intervalos():
-    while True:
-        try:
-            a = float(input("Ingrese el valor del intervalo a: "))
-            b = float(input("Ingrese el valor del intervalo b: "))
-            if a == b:
-                print("Los valores de a y b no deben ser iguales. Intente de nuevo.")
-                continue
-            return a, b
-        except ValueError:
-            print("Ingrese un valor numérico válido para a y b.")
-
-# Método de Simpson 1/3
-def Simpson_1_3_simple(f, a, b):
-    h = (b - a) / 2
-    X0 = a
-    X1 = a + h
-    X2 = b
-    integral = (h / 3) * (f(X0) + 4 * f(X1) + f(X2))
-    return integral
-
-def Simpson_1_3_compuesto(f, a, b, n):
-    if n <= 0:
-        print("Advertencia: El número de subintervalos 'n' debe ser positivo para usar Simpson compuesto.")
-        return None
-    h = (b - a) / n
-    puntos_evaluacion = [a + i * h for i in range(n+1)]
-    suma_impares = sum(f(x) for i, x in enumerate(puntos_evaluacion) if i % 2 == 1)
-    suma_pares = sum(f(x) for i, x in enumerate(puntos_evaluacion) if i % 2 == 0 and i != 0)
-    integral = (b - a) * (f(a) + 4 * suma_impares + 2 * suma_pares + f(b)) / (6 * n)
-    return integral
-
-# Método de Simpson 3/8
-def Simpson_3_8_simple(f, a, b):
-    h = (b - a) / 3
-    X0 = a
-    X1 = (2 * a + b) / 3
-    X2 = (a + 2 * b) / 3
-    X3 = b
-    integral = (b - a) * ((f(X0) + 3 * f(X1) + 3 * f(X2) + f(X3)) / 8)
-    return integral
-
-def Simpson_3_8_compuesto(f, a, b, n):
-    if n <= 0:
-        print("Advertencia: El número de subintervalos 'n' debe ser positivo para usar Simpson compuesto.")
-        return None
-    h = (b - a) / n
-    puntos_evaluacion = [a + i * h for i in range(n+1)]
-    suma_impares = sum(f(puntos_evaluacion[2*i-1]) for i in range(1, (n // 2) + 1))
-    suma_pares = sum(f(puntos_evaluacion[2*i]) for i in range(1, (n // 2)))
-    integral = h / 3 * (f(a) + 4 * suma_impares + 2 * suma_pares + f(b))
-    return integral
-
-# Método del Trapecio
-def trapecio_simple(f, a, b):
-    integral = (b - a) * ((f(a) + f(b)) / 2)
-    return integral
-
-def trapecio_compuesto(f, a, b, n):
+def trapecio_compuesto_simple(f, a, b, n):
     h = (b - a) / n
     suma = 0
-    for k in range(1, n):
-        x_k = a + k * h
-        suma += f(x_k)
-    integral = (b - a) * ((f(a) + 2 * suma + f(b)) / (2 * n))
+
+
+def trapecio_compuesto_doble(f, a1, b1, a2, b2, n):
+    h1 = (b1 - a1) / n
+    h2 = (b2 - a2) / n
+    suma = 0
+
+    for i in range(n):
+        for j in range(n):
+            x1_k = a1 + i * h1
+            x2_k = a2 + j * h2
+            suma += f(x1_k, x2_k)
+
+    integral = (b1 - a1) * (b2 - a2) * ((f(a1, a2) + f(b1, a2) + f(a1, b2) + f(b1, b2) + 2 * suma) / (4 * n**2))
     return integral
 
-# Función para calcular la integral
-def calcular_integral(f, a, b):
-    print("Seleccione el método de integración numérica:")
-    print("1. Simpson 1/3 Simple")
-    print("2. Simpson 1/3 Compuesto")
-    print("3. Simpson 3/8 Simple")
-    print("4. Simpson 3/8 Compuesto")
-    print("5. Trapecio Simple")
-    print("6. Trapecio Compuesto")
+# Función para calcular la integral usando el método del trapecio compuesto para tres dimensiones
+def trapecio_compuesto_triple(f, a1, b1, a2, b2, a3, b3, n):
+    h1 = (b1 - a1) / n
+    h2 = (b2 - a2) / n
+    h3 = (b3 - a3) / n
+    suma = 0
 
-    while True:
-        try:
-            metodo = int(input("Ingrese el número del método deseado: "))
-            if metodo == 1:
-                resultado = Simpson_1_3_simple(f, a, b)
-            elif metodo == 2:
-                n = int(input("Ingrese el número de intervalos para Simpson Compuesto (debe ser un número positivo): "))
-                resultado = Simpson_1_3_compuesto(f, a, b, n)
-            elif metodo == 3:
-                resultado = Simpson_3_8_simple(f, a, b)
-            elif metodo == 4:
-                n = int(input("Ingrese el número de intervalos para Simpson Compuesto (debe ser un número positivo): "))
-                resultado = Simpson_3_8_compuesto(f, a, b, n)
-            elif metodo == 5:
-                resultado = trapecio_simple(f, a, b)
-            elif metodo == 6:
-                n = int(input("Ingrese el número de intervalos para el Trapecio Compuesto (debe ser un número positivo): "))
-                resultado = trapecio_compuesto(f, a, b, n)
-            else:
-                print("Número de método no válido. Intente de nuevo.")
-                continue
-            
-            print("-" * 70)
-            print(f"Resultado de la integral con el método seleccionado:")
-            print(f"Integral aproximada: {resultado:.10f}")
-            print("-" * 70)
-            return resultado
-        except ValueError:
-            print("Entrada inválida. Intente de nuevo.")
+    for i in range(n):
+        for j in range(n):
+            for k in range(n):
+                x1_k = a1 + i * h1
+                x2_k = a2 + j * h2
+                x3_k = a3 + k * h3
+                suma += f(x1_k, x2_k, x3_k)
 
-# Función principal para ejecutar el programa
-def main_integracion_numerica():
-    print("-" * 70)
-    print("Métodos de Integración Numérica".center(70))
-    print("-" * 70)
+    integral = (b1 - a1) * (b2 - a2) * (b3 - a3) * ((f(a1, a2, a3) + f(b1, a2, a3) + f(a1, b2, a3) + f(b1, b2, a3) + 
+                   f(a1, a2, b3) + f(b1, a2, b3) + f(a1, b2, b3) + f(b1, b2, b3) + 2 * suma) / (8 * n**3))
+    return integral
 
-    x = symbols('x')
-    funcion_str = pedir_funcion()
 
+def pedir_intervalos(dim):
+    intervalos = []
+    for d in range(dim):
+        a = float(input(f"Ingrese el valor del intervalo a para la dimensión {d+1}: "))
+        b = float(input(f"Ingrese el valor del intervalo b para la dimensión {d+1}: "))
+        intervalos.append((a, b))
+    return intervalos
+
+# Función para detectar la dimensión de la función ingresada
+def detect_dimension(funcion_str):
     try:
         expr = sympify(funcion_str)
-        f = lambdify(x, expr, 'numpy')
+        variables = expr.free_symbols 
     except Exception as e:
-        print("Error al definir la función:", e)
-        return
-
-    print("-" * 70)
-    a, b = pedir_intervalos()
-    calcular_integral(f, a, b)
+        print(f"Error al analizar la función: {e}")
+        variables = []
+    return len(variables)
 
 if __name__ == "__main__":
-    main_integracion_numerica()
+    print("-" * 90)
+    print("Trapecio compuesto para integrales simples, dobles o triples".center(90))
+    print("-" * 90)
+    funcion_str = pedir_funcion()
+    print("-" * 90)
+    dimension = detect_dimension(funcion_str)
+
+    if dimension == 1:
+        print("Se ha detectado una integral simple.".center(90))
+        print("-"*90)
+        intervalos = pedir_intervalos(1)
+        a, b = intervalos[0]
+        n = int(input("Ingrese el número de intervalos que desea: "))
+        f = lambdify('x', funcion_str, 'numpy')
+        resultado = trapecio_compuesto_simple(f, a, b, n)
+        print("-" * 90)
+        print("Integral a evaluar:", funcion_str)
+        print("Intervalo a:", a, "Intervalo b:", b)
+        print("-" * 90)
+
+        # Construir la tabla de subintervalos y resultados de la función
+        tabla = [
+            ["Intervalo", "Subintervalo", "Valor de la función"]
+        ]
+        h = (b - a) / n
+        for i in range(n):
+            x_a = a + i * h
+            x_b = a + (i + 1) * h
+            valor_funcion = f((x_a + x_b) / 2)  # Evaluar en el punto medio del subintervalo
+            tabla.append([f"{a:.2f}, {b:.2f}", f"{x_a:.2f}, {x_b:.2f}", valor_funcion])
+
+        # Imprimir la tabla utilizando tabulate
+        print(tabulate(tabla, headers="firstrow", tablefmt="fancy_grid"))
+        print("-"*90)
+        print(f"Resultado de la integración = {resultado}")
+
+    elif dimension == 2:
+        print("Se ha detectado una integral doble.".center(90))
+        print("-" * 90)
+        intervalos = pedir_intervalos(2)
+        if len(intervalos) < 2:
+            print("Error: No se han proporcionado suficientes intervalos para una integral doble.")
+        else:
+            a1, b1 = intervalos[0]
+            a2, b2 = intervalos[1]
+            n = int(input("Ingrese el número de intervalos que desea: "))
+            f = lambdify(('x', 'y'), funcion_str, 'numpy')
+            resultado = trapecio_compuesto_doble(f, a1, b1, a2, b2, n)
+            print("-" * 90)
+            print("Integral a evaluar:", funcion_str)
+            print("Intervalos por dimensión:", intervalos)
+            print("-" * 90)
+
+            # Construir la tabla de subintervalos y resultados de la función
+            tabla = [
+                ["Intervalo", "Subintervalo", "Valor de la función"]
+            ]
+            h1 = (b1 - a1) / n
+            h2 = (b2 - a2) / n
+            for i in range(n):
+                for j in range(n):
+                    x1_a = a1 + i * h1
+                    x1_b = a1 + (i + 1) * h1
+                    x2_a = a2 + j * h2
+                    x2_b = a2 + (j + 1) * h2
+                    valor_funcion = f((x1_a + x1_b) / 2, (x2_a + x2_b) / 2)  # Evaluar en el punto medio del subintervalo
+                    tabla.append([f"({a1:.2f}, {b1:.2f}), ({a2:.2f}, {b2:.2f})",
+                                  f"({x1_a:.2f}, {x1_b:.2f}), ({x2_a:.2f}, {x2_b:.2f})",
+                                  valor_funcion])
+
+            # Imprimir la tabla utilizando tabulate
+            print(tabulate(tabla, headers="firstrow", tablefmt="fancy_grid"))
+            print("-" * 90)
+            print(f"Resultado de la integración = {resultado}")
+
+    elif dimension == 3:
+        print("Se ha detectado una integral triple.".center(90))
+        print("-" * 90)
+        intervalos = pedir_intervalos(3)
+        if len(intervalos) < 3:
+            print("Error: No se han proporcionado suficientes intervalos para una integral triple.")
+        else:
+            a1, b1 = intervalos[0]
+            a2, b2 = intervalos[1]
+            a3, b3 = intervalos[2]
+            n = int(input("Ingrese el número de intervalos que desea: "))
+            f = lambdify(('x', 'y', 'z'), funcion_str, 'numpy')
+            resultado = trapecio_compuesto_triple(f, a1, b1, a2, b2, a3, b3, n)
+            print("-" * 90)
+            print("Integral a evaluar:", funcion_str)
+            print("Intervalos por dimensión:", intervalos)
+            print("-" * 65)
+
+
+            # Construir la tabla de subintervalos y resultados de la función
+            tabla = [
+                ["Intervalo", "Subintervalo", "Valor de la función"]
+            ]
+            h1 = (b1 - a1) / n
+            h2 = (b2 - a2) / n
+            h3 = (b3 - a3) / n
+            for i in range(n):
+                for j in range(n):
+                    for k in range(n):
+                        x1_a = a1 + i * h1
+                        x1_b = a1 + (i + 1) * h1
+                        x2_a = a2 + j * h2
+                        x2_b = a2 + (j + 1) * h2
+                        x3_a = a3 + k * h3
+                        x3_b = a3 + (k + 1) * h3
+                        valor_funcion = f((x1_a + x1_b) / 2, (x2_a + x2_b) / 2, (x3_a + x3_b) / 2)  # Evaluar en el punto medio del subintervalo
+                        tabla.append([f"({a1:.2f}, {b1:.2f}), ({a2:.2f}, {b2:.2f}), ({a3:.2f}, {b3:.2f})",
+                                      f"({x1_a:.2f}, {x1_b:.2f}), ({x2_a:.2f}, {x2_b:.2f}), ({x3_a:.2f}, {x3_b:.2f})",
+                                      valor_funcion])
+
+            # Imprimir la tabla utilizando tabulate
+            print(tabulate(tabla, headers="firstrow", tablefmt="fancy_grid"))
+            print("-" * 90)
+            print(f"Resultado de la integración = {resultado}")
+    else:
+        print("No se puede manejar una integral de más de tres dimensiones.")

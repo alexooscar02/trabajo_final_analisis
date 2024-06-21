@@ -73,7 +73,7 @@ def interpolacion_newton_diferencias_divididas(funcion, valores_x, valores_y, pu
     # Calcular el error teórico si se proporciona una función
     if funcion is not None:
         n = len(valores_x) - 1  
-        a, b = valores_x[0], valores_x[-1]  
+        a, b = min(valores_x), max(valores_x)  
         xi = (a + b) / 2  
 
         derivada_n_mas_1 = sp.diff(funcion, x, n+1).subs(x, xi).evalf()
@@ -89,7 +89,7 @@ def interpolacion_newton_diferencias_divididas(funcion, valores_x, valores_y, pu
         print(f"Error Teórico = {error_teorico.evalf()}\n")
 
 # Función para calcular el polinomio de interpolación de Newton en forma recursiva
-def calculo_newton_interpolacion_recursiva(valores_x, valores_y, punto_evaluacion):
+def calculo_newton_interpolacion_recursiva(funcion, valores_x, valores_y, punto_evaluacion):
     print("\n\tINTERPOLACIÓN DE NEWTON (FORMA RECURSIVA)\n")
     
     # Inicializar los coeficientes
@@ -131,6 +131,29 @@ def calculo_newton_interpolacion_recursiva(valores_x, valores_y, punto_evaluacio
     print(f"\nEvaluación en x = {punto_evaluacion}:")
     print(f"f({punto_evaluacion}) = {valor_evaluado}")
 
+    # Calcular error teórico y porcentual
+    if funcion is not None:
+        valor_verdadero = funcion.subs(x, punto_evaluacion).evalf()
+        error_porcentual = abs((valor_verdadero - valor_evaluado) / valor_verdadero) * 100
+        print(f"Valor verdadero =", valor_verdadero)
+        print(f"Error porcentual = {error_porcentual}%\n")
+
+        # Cálculo del error teórico
+        n = len(valores_x) - 1  
+        a, b = min(valores_x), max(valores_x)
+        xi = (a + b) / 2  
+
+        derivada_n_mas_1 = sp.diff(funcion, x, n + 1).subs(x, xi).evalf()
+
+        factorial_n_mas_1 = sp.factorial(n + 1)
+
+        producto_terminos = 1
+        for xi_valor in valores_x:
+            producto_terminos *= (punto_evaluacion - xi_valor)
+
+        error_teorico = abs(derivada_n_mas_1 / factorial_n_mas_1) * producto_terminos
+        print(f"Error Teórico = {error_teorico.evalf()}\n")
+
 # Función principal para elegir el método de interpolación
 def calcular_interpolacion_newton():
     print("Seleccione el método de interpolación de Newton:")
@@ -167,8 +190,10 @@ def calcular_interpolacion_newton():
     if metodo == 1:
         interpolacion_newton_diferencias_divididas(funcion, valores_x, valores_y, punto_evaluacion)
     elif metodo == 2:
-        calculo_newton_interpolacion_recursiva(valores_x, valores_y, punto_evaluacion)
+        calculo_newton_interpolacion_recursiva(funcion, valores_x, valores_y, punto_evaluacion)
     else:
         print("Método de interpolación no válido.")
 
 # Ejecutar la función principal
+if __name__ == "__main__":
+    calcular_interpolacion_newton()
