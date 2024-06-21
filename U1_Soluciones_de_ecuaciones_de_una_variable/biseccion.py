@@ -7,6 +7,7 @@ from sympy.parsing.sympy_parser import (
     implicit_multiplication,
     convert_xor,
 )
+from sympy.abc import *
 
 x = symbols("x")
 
@@ -122,5 +123,3 @@ def calcular_biseccion():
 
     print(df)
     print(f"La raíz de la ecuación es {xr} con un error de {Ea} en la {iteracion-1}° iteración.")
-
-
