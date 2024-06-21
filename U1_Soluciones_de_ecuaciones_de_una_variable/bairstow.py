@@ -1,18 +1,13 @@
 import pandas as pd
 import math
 import cmath
-from sympy import *
-from sympy import symbols, Poly, parse_expr
-from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication,convert_xor
-import cmath
-from sympy import *
-from sympy import symbols, Poly, parse_expr
+from sympy import symbols, Poly, parse_expr, sympify
 from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
-from sympy.abc import *
 import re
 
 x = symbols('x')
 
+# Función para calcular los valores de b
 def calcular_valores_b(a, r, s):
     n = len(a) - 1  
     b = [0] * (n + 1)  
@@ -24,6 +19,7 @@ def calcular_valores_b(a, r, s):
 
     return b
 
+# Función para calcular los valores de c
 def calcular_valores_c(b, r, s):
     n = len(b) - 1  
     c = [0] * (n + 1)  
@@ -35,6 +31,7 @@ def calcular_valores_c(b, r, s):
 
     return c
 
+# Función para calcular los deltas
 def calcular_deltas(coeficientes_b, coeficientes_c):
     c1, c2, c3 = coeficientes_c[1:4]  
     b0, b1 = coeficientes_b[:2]  
@@ -44,16 +41,19 @@ def calcular_deltas(coeficientes_b, coeficientes_c):
 
     return delta_r, delta_s
 
-def calcular_valores_iniciales(r,s,delta_r,delta_s):
-    r=r+delta_r
-    s=s+delta_s
-    return r,s
+# Función para actualizar los valores de r y s
+def calcular_valores_iniciales(r, s, delta_r, delta_s):
+    r = r + delta_r
+    s = s + delta_s
+    return r, s
 
-def analizar_error(r,s,delta_r,delta_s):
-    EDr=(abs(delta_r/r))*100
-    EDs=(abs(delta_s/s))*100
+# Función para analizar el error
+def analizar_error(r, s, delta_r, delta_s):
+    EDr = (abs(delta_r / r)) * 100
+    EDs = (abs(delta_s / s)) * 100
     return EDr, EDs
 
+# Función para realizar la división sintética
 def division_sintetica(coeficientes, a):
     n = len(coeficientes)
     n_coeficientes = [coeficientes[0]]
@@ -65,17 +65,19 @@ def division_sintetica(coeficientes, a):
     
     return n_coeficientes[:-1]
 
-def cuadratica2(a,b,c):#para hallar las ultimas 2 raices
-    discri=math.pow(b,2)-(4*a*c)
-    raices=[]
-    if discri > 0:#para raiz real
-        raices.append((-b+math.sqrt(discri))/(2*a))
-        raices.append((-b-math.sqrt(discri))/(2*a))
-    else:# para raices complejas
-        raices.append((-b-cmath.sqrt(discri))/(2*a))
-        raices.append((-b+cmath.sqrt(discri))/(2*a))
+# Función para resolver ecuaciones cuadráticas
+def cuadratica2(a, b, c):
+    discri = math.pow(b, 2) - (4 * a * c)
+    raices = []
+    if discri > 0:  # Raíz real
+        raices.append((-b + math.sqrt(discri)) / (2 * a))
+        raices.append((-b - math.sqrt(discri)) / (2 * a))
+    else:  # Raíces complejas
+        raices.append((-b - cmath.sqrt(discri)) / (2 * a))
+        raices.append((-b + cmath.sqrt(discri)) / (2 * a))
     return raices
 
+# Función interna para el método de Bairstow
 def calcular_bairstow_interna(a, r0, s0):
     Es = 0.05
     EDr = 100
@@ -87,7 +89,6 @@ def calcular_bairstow_interna(a, r0, s0):
     df = pd.DataFrame(columns=["Iteracion", "r", "s", "Ear", "Eas"])
 
     while EDr > Es and EDs > Es:
-
         b = calcular_valores_b(a, r0, s0)
         c = calcular_valores_c(b, r0, s0)
         delta_r, delta_s = calcular_deltas(b, c)
@@ -101,8 +102,8 @@ def calcular_bairstow_interna(a, r0, s0):
         df.loc[iteracion - 1] = [iteracion, r0, s0, EDr, EDs]
         iteracion += 1
 
-    raiz_1 = ((r0 + (r0 ** 2 + 4 * s0) ** (1/2)) / 2)
-    raiz_2 = ((r0 - (r0 ** 2 + 4 * s0) ** (1/2)) / 2)
+    raiz_1 = ((r0 + (r0 ** 2 + 4 * s0) ** 0.5) / 2)
+    raiz_2 = ((r0 - (r0 ** 2 + 4 * s0) ** 0.5) / 2)
 
     coe_nuevo = division_sintetica(list(reversed(a)), raiz_1)
     coe_nuevo2 = division_sintetica(coe_nuevo, raiz_2)
@@ -116,18 +117,19 @@ def calcular_bairstow_interna(a, r0, s0):
     if len(coe_nuevo2) >= 4:
         print("El polinomio resultante es de grado 3 o más.")
         print("Aplicando el método Bairstow nuevamente...\n")
-        raices_encontradas.extend(calcular_bairstow(coe_nuevo2, r, s))
+        raices_encontradas.extend(calcular_bairstow_interna(list(reversed(coe_nuevo2)), r0, s0))
     elif len(coe_nuevo2) == 3:
         print("→ El polinomio resultante es de grado 2.")
         raices = cuadratica2(coe_nuevo2[0], coe_nuevo2[1], coe_nuevo2[2])
         raices_encontradas.extend(raices)
     elif len(coe_nuevo2) == 2:
         print("→ El polinomio resultante es de grado 1.")
-        raiz = -(r / s)
+        raiz = -(coe_nuevo2[1] / coe_nuevo2[0])
         raices_encontradas.append(raiz)
 
     return raices_encontradas
 
+# Función para pedir la función al usuario
 def pedir_funcion(mensaje):
     transformations = standard_transformations + (split_symbols, implicit_multiplication, convert_xor)
     while True:
@@ -140,30 +142,29 @@ def pedir_funcion(mensaje):
                     exp_pol = Poly(expr)
                     print(f"➣ Ecuacion: {exp_pol}")
                     coeficientes = list(reversed(exp_pol.all_coeffs()))  # Revertir los coeficientes
-                    print(coeficientes)
+                    print(f"Coeficientes: {coeficientes}")
                     return coeficientes
-                except:
-                    print("Error: La función ingresada no es válida. Por favor, inténtalo de nuevo.")
+                except Exception as e:
+                    print(f"Error: La función ingresada no es válida ({e}). Por favor, inténtalo de nuevo.")
             else:
                 print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
         else:
             print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
 
+# Función para pedir un número
 def pedir_cifras(mensaje):
     while True:
         valor = input(mensaje)
         if valor.strip():
             try:
-                numero = sympify(valor)
-                if numero.is_real:
-                    return float(numero)
-                else:
-                    print("Error: Ingresa un número real válido.")
-            except (ValueError, TypeError):
+                numero = float(valor)
+                return numero
+            except ValueError:
                 print("Error: Ingresa un número válido.")
         else:
             print("Error: No puedes dejar este campo vacío.")
-            
+
+# Función principal para el método de Bairstow
 def calcular_bairstow():
     print("\t\t\nMETODO DE BAIRSTOW")
     EDr = 100
@@ -187,11 +188,9 @@ def calcular_bairstow():
     else:
         Es = pedir_cifras("Ingrese la tolerancia: ")
 
-
     raices_encontradas = []  # Lista para almacenar todas las raíces encontradas
 
     while EDr > Es and EDs > Es:
-
         b = calcular_valores_b(a, r0, s0)
         c = calcular_valores_c(b, r0, s0)
         delta_r, delta_s = calcular_deltas(b, c)
@@ -205,8 +204,8 @@ def calcular_bairstow():
         df.loc[iteracion - 1] = [iteracion, r0, s0, EDr, EDs]
         iteracion += 1
 
-    raiz_1 = ((r0 + (r0 ** 2 + 4 * s0) ** (1/2)) / 2)
-    raiz_2 = ((r0 - (r0 ** 2 + 4 * s0) ** (1/2)) / 2)
+    raiz_1 = ((r0 + (r0 ** 2 + 4 * s0) ** 0.5) / 2)
+    raiz_2 = ((r0 - (r0 ** 2 + 4 * s0) ** 0.5) / 2)
 
     raices_encontradas.append(raiz_1)
     raices_encontradas.append(raiz_2)
@@ -230,10 +229,12 @@ def calcular_bairstow():
         print(f"{raices}\n")
     elif len(coe_nuevo2) == 2:
         print("→ El polinomio resultante es de grado 1.")
-        raiz = -r0 / s0
-        raices_encontradas.append(raiz)
+        raiz = -(coe_nuevo2[1] / coe_nuevo2[0])
         print(f"{raiz}\n")
+        raices_encontradas.append(raiz)
 
     # Mostrar todas las raíces encontradas al final
     print(f"Todas las raíces encontradas: {raices_encontradas}")
 
+if __name__ == "__main__":
+    calcular_bairstow()
