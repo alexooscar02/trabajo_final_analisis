@@ -381,4 +381,3 @@ def main_diferencias_finitas():
         print("No se pudo calcular la derivada. Verifique los parámetros ingresados.")
 
 # Llamada a la función principal
-main_diferencias_finitas()
