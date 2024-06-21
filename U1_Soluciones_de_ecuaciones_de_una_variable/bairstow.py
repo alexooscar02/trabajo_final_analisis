@@ -123,21 +123,24 @@ def calcular_bairstow_interna(a, r0, s0):
 
     return raices_encontradas
 
-def pedir_funcion():
+def pedir_funcion(mensaje):
     transformations = standard_transformations + (split_symbols, implicit_multiplication, convert_xor)
     while True:
-        expr_str = input("Ingrese la función en términos de x: ")
-        caracteres_permitidos = set('x+-**/^() ')
-        if all(c.isalnum() or c in caracteres_permitidos for c in expr_str):
-            try:
-                expr = parse_expr(expr_str, transformations=transformations)
-                exp_pol = Poly(expr)
-                print(f"➣ Ecuacion: {exp_pol}")
-                coeficientes = list(reversed(exp_pol.all_coeffs()))  # Revertir los coeficientes
-                print(coeficientes)
-                return coeficientes
-            except:
-                print("Error: La función ingresada no es válida. Por favor, inténtalo de nuevo.")
+        expr_str = input(mensaje)
+        if all(c not in expr_str for c in "#$%&\"'_`~{}[]@¿¡!?°|;:<>"):
+            valid_chars_pattern = re.compile(r'^[a-zA-Z0-9\s\+\-\*/\^\(\)\|\.,]*$')
+            if valid_chars_pattern.match(expr_str):
+                try:
+                    expr = parse_expr(expr_str, transformations=transformations)
+                    exp_pol = Poly(expr)
+                    print(f"➣ Ecuacion: {exp_pol}")
+                    coeficientes = list(reversed(exp_pol.all_coeffs()))  # Revertir los coeficientes
+                    print(coeficientes)
+                    return coeficientes
+                except:
+                    print("Error: La función ingresada no es válida. Por favor, inténtalo de nuevo.")
+            else:
+                print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
         else:
             print("Error: La función contiene caracteres no permitidos. Por favor, inténtalo de nuevo.")
 
@@ -162,7 +165,7 @@ def calcular_bairstow():
     EDs = 100
     iteracion = 1
 
-    a = pedir_funcion()
+    a = pedir_funcion("Ingrese la funcion en terminos de x: ")
 
     r0 = pedir_cifras("Ingrese el valor de r0: ")
     s0 = pedir_cifras("Ingrese el valor de s0: ")
