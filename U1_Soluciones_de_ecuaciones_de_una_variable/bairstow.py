@@ -5,6 +5,11 @@ from sympy import *
 from sympy import symbols, Poly, parse_expr
 from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication,convert_xor
 import cmath
+from sympy import *
+from sympy import symbols, Poly, parse_expr
+from sympy.parsing.sympy_parser import standard_transformations, split_symbols, implicit_multiplication, convert_xor
+from sympy.abc import *
+import re
 
 x = symbols('x')
 
