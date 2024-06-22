@@ -14,19 +14,8 @@ Este proyecto se centra en el análisis y solución de problemas utilizando mét
 - Analizar la estabilidad y precisión de los métodos numéricos aplicados.
 - Desarrollar habilidades en el uso de herramientas computacionales para la implementación de soluciones numéricas.
 
-## Estructura del Repositorio
-
-El repositorio está organizado de la siguiente manera:
-
-- **/src**: Contiene el código fuente de los algoritmos numéricos.
-- **/docs**: Incluye la documentación técnica y reportes del proyecto.
-- **/data**: Almacena los conjuntos de datos utilizados para las pruebas y validaciones.
-- **/tests**: Contiene los scripts de prueba y validación de los algoritmos.
-- **README.md**: Este archivo de introducción y guía rápida del proyecto.
-
 ## Requisitos
 
-Para ejecutar los códigos y reproducir los experimentos, necesitarás:
+Para ejecutar los códigos necesitarás:
 
-- Python 3.8 o superior.
-- Bibliotecas adicionales: numpy, scipy, matplotlib.
+- Bibliotecas adicionales: numpy, sympy, matplotlib, pandas, rich, tabulate, prettytable.
