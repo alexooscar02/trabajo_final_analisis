@@ -116,7 +116,7 @@ class Taylor:
         return df
 
 def main_taylor():
-    print("Método de Taylor para resolver ecuaciones diferenciales ordinarias (EDO)")
+    print("Método de Taylor para resolver ecuaciones diferenciales ordinarias (EDO) ")
     print("-----------------------------------------------------------------------")
     funcion = pedir_funcion("Ingrese la función f(x,y): ")
     xi = pedir_cifras("Ingrese el valor inicial de x (x0): ")
